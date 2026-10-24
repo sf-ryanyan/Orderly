@@ -1,0 +1,1362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orderly · 门店要货与中央配货系统</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#161a2b; --ink-2:#4b5169; --ink-3:#8d93a8;
+  --line:#e3e6f0; --line-2:#eff1f8;
+  --bg:#f7f8fc; --card:#ffffff;
+  --brand:#2a3566; --brand-2:#44539b; --brand-soft:#eceff9;
+  --gold:#b08d47; --gold-soft:#faf3e6;
+  --amber:#c47d1a; --amber-soft:#fdf3e3;
+  --red:#b8453a; --red-soft:#fcecea;
+  --blue:#1d7a73; --blue-soft:#e3f2ef;
+  --violet:#5b4b8a; --violet-soft:#efecf7;
+  --shadow:0 1px 2px rgba(22,26,43,.04), 0 4px 16px rgba(22,26,43,.06);
+  --shadow-lg:0 2px 8px rgba(22,26,43,.06), 0 12px 32px rgba(22,26,43,.1);
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+body.app{padding-bottom:110px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+.hide{display:none !important}
+
+/* ============ LOGIN · Ethereal Glass / Editorial Split ============ */
+#login{
+  --g:#0A0B1C;            /* ground  */
+  --s1:#12142C;           /* surface 1 */
+  --ink:#FFFFFF;
+  --ink2:#AEB4D8;
+  --ink3:#848ABA;
+  --gold:#D9C08E;         /* 互补色 40° */
+  --gold-lo:#EBD9B0;
+  --peri:#8E9BE8;         /* 类比色 230° */
+  --hair:rgba(255,255,255,.09);
+  --hair-2:rgba(255,255,255,.16);
+  --ez:cubic-bezier(.32,.72,0,1);
+  position:fixed;inset:0;z-index:300;overflow-y:auto;background:var(--g);
+  font-family:"Plus Jakarta Sans","Noto Sans SC",-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+/* 径向光晕网格 */
+#login::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:
+  radial-gradient(44rem 34rem at 14% 10%, rgba(78,88,190,.40), transparent 62%),
+  radial-gradient(38rem 30rem at 88% 24%, rgba(217,192,142,.14), transparent 60%),
+  radial-gradient(52rem 40rem at 62% 104%, rgba(109,80,190,.30), transparent 66%)}
+/* 胶片颗粒 */
+.lg-grain{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.lg-wrap{position:relative;z-index:2;min-height:100dvh;display:grid;grid-template-columns:minmax(0,43fr) minmax(0,57fr);
+  align-items:center;gap:72px;max-width:1240px;margin:0 auto;padding:72px 44px}
+
+/* ---------- LEFT ---------- */
+@keyframes rise{from{opacity:0;transform:translateY(26px);filter:blur(7px)}to{opacity:1;transform:none;filter:none}}
+.lg-left>*{animation:rise .95s var(--ez) both}
+.lg-left>*:nth-child(1){animation-delay:.05s}
+.lg-left>*:nth-child(2){animation-delay:.14s}
+.lg-left>*:nth-child(3){animation-delay:.22s}
+.lg-left>*:nth-child(4){animation-delay:.3s}
+.lg-mk{width:54px;height:54px;display:block;margin-bottom:26px}
+.lg-badge{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--hair-2);border-radius:999px;
+  padding:7px 15px 7px 12px;font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--gold);
+  text-transform:uppercase;margin-bottom:26px;background:rgba(217,192,142,.055)}
+.lg-badge .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(217,192,142,.18)}
+.lg-h1{font-size:clamp(54px,6.4vw,86px);line-height:.94;letter-spacing:-.045em;font-weight:800;color:var(--ink);margin-bottom:20px}
+.lg-zh{font-size:17px;line-height:1.85;color:var(--ink2);letter-spacing:.07em;margin-bottom:46px;max-width:30ch}
+.lg-list{list-style:none;display:flex;flex-direction:column;gap:22px}
+.lg-list li{display:flex;gap:17px;align-items:flex-start}
+.lg-list .n{font-size:11.5px;font-weight:700;color:var(--gold);letter-spacing:.14em;padding-top:4px;
+  font-variant-numeric:tabular-nums;flex-shrink:0}
+.lg-list b{display:block;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:5px;letter-spacing:.02em}
+.lg-list i{display:block;font-size:13px;font-style:normal;line-height:1.75;color:var(--ink3);letter-spacing:.02em}
+
+/* ---------- RIGHT · 双层嵌套 ---------- */
+.lg-right{animation:rise 1.05s var(--ez) both;animation-delay:.18s}
+.lg-shell{background:rgba(255,255,255,.045);border:1px solid var(--hair);border-radius:30px;padding:7px;
+  box-shadow:0 36px 90px rgba(4,5,18,.6)}
+.lg-core{background:linear-gradient(170deg,rgba(23,26,56,.94),rgba(14,16,38,.94));
+  border-radius:23px;padding:34px 32px 30px;box-shadow:inset 0 1px 1px rgba(255,255,255,.14)}
+.lg-step{margin-bottom:26px}
+.lg-lb{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--ink2);
+  letter-spacing:.09em;margin-bottom:15px}
+.lg-lb i{display:inline-flex;align-items:center;justify-content:center;width:21px;height:21px;border-radius:50%;
+  border:1px solid rgba(217,192,142,.45);color:var(--gold);font-size:11px;font-style:normal;font-weight:700;flex-shrink:0}
+.lg-lb em{font-style:normal;color:var(--ink3);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin-left:auto}
+
+.ind-g{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.ind-c{position:relative;background:rgba(255,255,255,.035);border:1px solid var(--hair);border-radius:16px;
+  padding:16px 6px 13px;cursor:pointer;text-align:center;min-height:106px;
+  display:flex;flex-direction:column;align-items:center;
+  transition:transform .45s var(--ez),background .3s,border-color .3s,box-shadow .45s var(--ez)}
+.ind-c:hover{background:rgba(255,255,255,.07);border-color:var(--hair-2);transform:translateY(-4px)}
+.ind-c .ic{width:38px;height:38px;border-radius:50%;border:1px solid var(--hair-2);display:flex;align-items:center;
+  justify-content:center;margin:0 auto 11px;color:var(--peri);transition:.3s}
+.ind-c .ic svg{width:21px;height:21px}
+.ind-c .nm{margin-top:auto;display:block;font-size:13px;font-weight:600;color:#E7E9F6;letter-spacing:.02em;margin-bottom:3px}
+.ind-c .en{display:block;font-size:11px;color:var(--ink3);line-height:1.3;letter-spacing:.02em}
+.ind-c.on{background:rgba(217,192,142,.1);border-color:rgba(217,192,142,.66);
+  box-shadow:0 0 0 1px rgba(217,192,142,.2),0 16px 38px rgba(4,5,18,.5)}
+.ind-c.on .ic{color:var(--gold);border-color:rgba(217,192,142,.55);background:rgba(217,192,142,.1)}
+.ind-c.on .nm{color:#fff}
+.ind-c .ck{position:absolute;top:8px;right:8px;width:17px;height:17px;border-radius:50%;background:var(--gold);
+  display:none;align-items:center;justify-content:center}
+.ind-c.on .ck{display:flex}
+
+.role-g{display:flex;flex-direction:column;gap:8px}
+.role-c{position:relative;overflow:hidden;background:rgba(255,255,255,.035);border:1px solid var(--hair);
+  border-radius:16px;padding:15px 17px;cursor:pointer;display:flex;gap:14px;align-items:center;min-height:62px;
+  transition:transform .45s var(--ez),background .3s,border-color .3s,box-shadow .45s var(--ez)}
+.role-c:hover{background:rgba(255,255,255,.07);border-color:var(--hair-2);transform:translateX(4px)}
+.role-c>svg{width:23px;height:23px;flex-shrink:0;color:var(--peri);transition:.3s}
+.role-c .nm{display:block;font-size:14.5px;font-weight:650;color:#E7E9F6;margin-bottom:3px;letter-spacing:.02em}
+.role-c .de{display:block;font-size:13px;color:var(--ink3);line-height:1.55;letter-spacing:.02em}
+.role-c.on{background:rgba(217,192,142,.1);border-color:rgba(217,192,142,.66);
+  box-shadow:0 0 0 1px rgba(217,192,142,.2),0 16px 38px rgba(4,5,18,.5)}
+.role-c.on>svg{color:var(--gold)}
+.role-c.on .nm{color:#fff}
+.role-c.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold)}
+
+/* 岛式按钮 · button-in-button */
+.lg-go{width:100%;margin-top:4px;background:linear-gradient(180deg,var(--gold-lo),var(--gold));color:#121426;
+  border:0;border-radius:999px;padding:7px 7px 7px 28px;font-size:16px;font-weight:700;font-family:inherit;
+  cursor:pointer;letter-spacing:.03em;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  box-shadow:0 12px 30px rgba(217,192,142,.18);transition:transform .45s var(--ez),box-shadow .45s var(--ez),background .3s}
+.lg-go .arr{width:40px;height:40px;border-radius:50%;background:rgba(18,20,38,.1);display:flex;align-items:center;
+  justify-content:center;flex-shrink:0;transition:transform .45s var(--ez),background .3s}
+.lg-go:hover:not(:disabled){box-shadow:0 16px 38px rgba(217,192,142,.26)}
+.lg-go:hover:not(:disabled) .arr{transform:translate(4px,-1px) scale(1.06);background:rgba(18,20,38,.17)}
+.lg-go:active:not(:disabled){transform:scale(.985)}
+.lg-go:disabled{background:rgba(255,255,255,.055);color:#676D9A;cursor:not-allowed;box-shadow:none}
+.lg-go:disabled .arr{background:rgba(255,255,255,.05)}
+.lg-ft{text-align:center;color:#757BAB;font-size:13px;margin-top:20px;letter-spacing:.07em}
+
+@media(prefers-reduced-motion:reduce){
+  #login *{animation:none !important;transition:none !important}
+  .lg-left>*,.lg-right{opacity:1 !important;filter:none !important;transform:none !important}
+}
+
+/* ============ HEADER UTIL ============ */
+.hd-util{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.hd-util .sample{font-size:10.5px;letter-spacing:.05em;color:var(--ink-3);border:1px solid var(--line);border-radius:20px;padding:4px 10px;white-space:nowrap}
+.hd-util button{width:30px;height:30px;border:1px solid var(--line);background:var(--card);border-radius:9px;color:var(--ink-3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.16s;padding:0}
+.hd-util button:hover{border-color:var(--brand-2);color:var(--brand)}
+
+/* ============ HEADER ============ */
+header{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:50}
+.hd{display:flex;align-items:center;gap:15px;padding:13px 0}
+.logo{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.logo-mk{width:36px;height:36px;flex-shrink:0}
+.logo-tx strong{display:block;font-size:17px;letter-spacing:-.02em;line-height:1.15}
+.logo-tx span{display:block;font-size:10px;color:var(--ink-3);letter-spacing:.09em;text-transform:uppercase}
+.hd-sp{flex:1}
+.ind-badge .bi{display:inline-flex;width:15px;height:15px}
+.ind-badge .bi svg{width:15px;height:15px}
+.ind-badge span:last-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ind-badge{min-width:0;display:flex;align-items:center;gap:7px;background:var(--brand-soft);border:1px solid #d3d9f0;color:var(--brand);border-radius:9px;padding:6px 12px;font-size:12.5px;font-weight:600}
+.store-pick{min-width:0;display:flex;align-items:center;gap:9px;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:7px 13px;font-size:13px}
+.store-pick .dot{width:7px;height:7px;border-radius:50%;background:var(--brand-2)}
+.store-pick b{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.role-sw{display:flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+.role-sw button{border:0;background:transparent;padding:7px 14px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--ink-3);cursor:pointer;font-family:inherit;transition:.18s;white-space:nowrap;position:relative}
+.role-sw button.on{background:var(--card);color:var(--brand);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.role-sw button .pip{position:absolute;top:3px;right:4px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid #fff}
+
+/* ============ CUTOFF ============ */
+.cutoff{background:#161a2b;color:#b4b9d2;font-size:12.5px}
+.cutoff .wrap{display:flex;align-items:center;gap:11px;padding:9px 20px;flex-wrap:wrap}
+.cutoff b{color:#fff;font-weight:600}
+.cutoff svg{flex-shrink:0;opacity:.7}
+
+/* ============ GENERIC ============ */
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:26px 0 14px;flex-wrap:wrap}
+.sec-h h2{font-size:19px;letter-spacing:-.01em;font-weight:700}
+.sec-h .hint{font-size:12.5px;color:var(--ink-3)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.pd{padding:20px}
+.btn{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:9px 15px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;color:var(--ink-2);transition:.16s;white-space:nowrap}
+.btn:hover{border-color:var(--brand-2);color:var(--brand)}
+.btn-p{background:var(--brand);border-color:var(--brand);color:#fff}
+.btn-p:hover{background:var(--brand-2);border-color:var(--brand-2);color:#fff}
+.btn-p:disabled{background:#ccd0dd;border-color:#ccd0dd;color:#fff;cursor:not-allowed}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;letter-spacing:.01em}
+.tag.own{background:var(--brand-soft);color:var(--brand)}
+.tag.ext{background:var(--blue-soft);color:var(--blue)}
+.tag.low{background:var(--red-soft);color:var(--red)}
+.tag.save{background:var(--amber-soft);color:var(--amber)}
+
+/* ============ STORE: BUDGET ============ */
+.budget{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin-top:20px;box-shadow:var(--shadow)}
+.budget-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:11px;flex-wrap:wrap}
+.budget-top .lb{font-size:13px;color:var(--ink-2);min-width:0;flex:1 1 auto}
+.budget-top .lb b{color:var(--ink);font-weight:700}
+.bar{height:8px;background:var(--line-2);border-radius:20px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%;background:var(--brand-2);transition:width .35s cubic-bezier(.4,0,.2,1)}
+.bar i.cart{background:var(--amber)}
+
+/* ============ TOOLS ROW ============ */
+.tools{display:flex;gap:11px;margin:16px 0 0;flex-wrap:wrap;align-items:center}
+.srch{flex:1;min-width:200px;position:relative}
+.srch input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 13px 10px 36px;font-size:13.5px;font-family:inherit;color:var(--ink)}
+.srch input:focus{outline:0;border-color:var(--brand-2)}
+.srch svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.35}
+.cats{display:flex;gap:8px;margin:15px 0 16px;overflow-x:auto;padding-bottom:3px;-webkit-overflow-scrolling:touch}
+.cats button{border:1px solid var(--line);background:var(--card);border-radius:20px;padding:7px 15px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer;font-family:inherit;white-space:nowrap;transition:.16s}
+.cats button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+
+/* ============ PRODUCT GRID ============ */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(282px,1fr));gap:13px}
+.pc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:11px;transition:.18s}
+.pc.alert{border-color:#f0c8c2;background:linear-gradient(180deg,#fffafa,#fff)}
+.pc-top{display:flex;gap:12px}
+.pc-art{width:54px;height:54px;border-radius:11px;overflow:hidden;flex-shrink:0;border:1px solid var(--line-2)}
+.pc-art svg{width:100%;height:100%;display:block}
+.pc-id{flex:1;min-width:0}
+.pc-id .n{font-size:14px;font-weight:650;line-height:1.3;letter-spacing:-.01em}
+.pc-id .cn{font-size:12px;color:var(--ink-3);margin-top:1px}
+.pc-id .u{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.pc-meta{display:flex;gap:6px;flex-wrap:wrap}
+.pc-stat{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;border-top:1px solid var(--line-2);padding-top:11px}
+.pc-stat .sl{font-size:11px;color:var(--ink-3);display:block;margin-bottom:3px}
+.pc-stat .sv{font-size:13.5px;font-weight:650}
+.pc-stat .sv.bad{color:var(--red)}
+.usage{display:flex;align-items:flex-end;gap:3px;height:28px;max-width:92px}
+.usage i{width:18px;background:var(--brand-soft);border-radius:2px 2px 0 0;display:block}
+.usage i:last-child{background:var(--brand-2)}
+.pc-price{display:flex;align-items:baseline;gap:7px}
+.pc-price .p{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.pc-price .pu{font-size:11.5px;color:var(--ink-3)}
+.pc-sup{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:5px}
+.altbox{background:var(--amber-soft);border:1px solid #f0dcbb;border-radius:9px;padding:8px 11px;font-size:11.5px;color:#7a5410;display:flex;align-items:center;justify-content:space-between;gap:9px}
+.altbox button{background:var(--amber);border:0;color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;font-family:inherit;white-space:nowrap}
+.qty{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
+.qty button{width:34px;height:34px;border:0;background:var(--card);font-size:17px;color:var(--ink-2);cursor:pointer;font-family:inherit;transition:.14s;line-height:1}
+.qty button:hover{background:var(--bg);color:var(--brand)}
+.qty input{width:44px;height:34px;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);text-align:center;font-size:14px;font-weight:650;font-family:inherit;color:var(--ink);background:var(--card);-moz-appearance:textfield}
+.qty input::-webkit-outer-spin-button,.qty input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pc-act{display:flex;align-items:center;justify-content:space-between;gap:11px}
+.sugg{font-size:11.5px;color:var(--brand);background:var(--brand-soft);border:1px solid #d3d9f0;border-radius:8px;padding:6px 10px;cursor:pointer;font-family:inherit;font-weight:600;transition:.15s;white-space:nowrap}
+.sugg:hover{background:#dfe4f5}
+
+/* ============ CART BAR ============ */
+.cartbar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 24px rgba(22,26,43,.09);z-index:60}
+.cartbar .wrap{display:flex;align-items:center;gap:18px;padding:14px 20px}
+.cart-l1{display:flex;align-items:baseline;gap:12px}
+.cart-l1 .n{font-size:13px;color:var(--ink-2)}
+.cart-l1 .n b{color:var(--ink);font-weight:700}
+.cart-l1 .t{font-size:22px;font-weight:700;letter-spacing:-.025em}
+.cart-l2{font-size:11.5px;margin-top:3px;display:flex;align-items:center;gap:6px}
+.cart-l2.ok{color:var(--brand)}
+.cart-l2.warn{color:var(--amber)}
+.btn-sub{margin-left:auto;background:var(--brand);border:0;color:#fff;border-radius:11px;padding:14px 26px;font-size:14.5px;font-weight:700;font-family:inherit;cursor:pointer;transition:.18s;white-space:nowrap}
+.btn-sub:hover{background:var(--brand-2)}
+.btn-sub:disabled{background:#ccd0dd;cursor:not-allowed}
+
+/* ============ KITCHEN ============ */
+.kstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:12px;margin-top:20px}
+.kst{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.kst .l{font-size:11.5px;color:var(--ink-3);letter-spacing:.03em;margin-bottom:6px}
+.kst .v{font-size:25px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.kst .d{font-size:11.5px;color:var(--ink-3);margin-top:4px}
+.agg-row{border-bottom:1px solid var(--line-2)}
+.agg-row:last-child{border-bottom:0}
+.agg-h{display:flex;align-items:center;gap:13px;padding:13px 18px;cursor:pointer;transition:.14s}
+.agg-h:hover{background:var(--bg)}
+.agg-art{width:40px;height:40px;border-radius:9px;overflow:hidden;flex-shrink:0;border:1px solid var(--line-2)}
+.agg-art svg{width:100%;height:100%;display:block}
+.agg-nm{flex:1;min-width:0}
+.agg-nm .n{font-size:13.5px;font-weight:650;line-height:1.3}
+.agg-nm .cn{font-size:11.5px;color:var(--ink-3)}
+.agg-q{font-size:17px;font-weight:700;letter-spacing:-.02em;white-space:nowrap}
+.agg-q small{font-size:11.5px;font-weight:500;color:var(--ink-3);margin-left:2px}
+.agg-ch{transition:.2s;opacity:.4;flex-shrink:0}
+.agg-row.open .agg-ch{transform:rotate(180deg)}
+.agg-d{display:none;padding:0 18px 13px 71px;background:var(--bg)}
+.agg-row.open .agg-d{display:block}
+.sub-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;font-size:12.5px;border-bottom:1px dashed var(--line);color:var(--ink-2)}
+.sub-row:last-child{border-bottom:0}
+.sub-row b{color:var(--ink);font-weight:650}
+.sub-row .you{color:var(--brand);font-weight:650}
+
+/* ============ PRODUCTION PLAN ============ */
+.plan2{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px;align-items:start}
+.plan-c{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.plan-hd{padding:13px 18px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:9px}
+.plan-hd .ic{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.plan-hd.own .ic{background:var(--brand-soft);color:var(--brand)}
+.plan-hd.ext .ic{background:var(--blue-soft);color:var(--blue)}
+.plan-hd .t{font-size:13.5px;font-weight:700}
+.plan-hd .s{font-size:11px;color:var(--ink-3)}
+.plan-li{display:flex;align-items:center;justify-content:space-between;padding:10px 18px;font-size:12.5px;border-bottom:1px solid var(--line-2)}
+.plan-li:last-child{border-bottom:0}
+.plan-li .nm{color:var(--ink-2)}
+.plan-li b{font-weight:650;white-space:nowrap}
+
+/* ============ DELIVERY SLIPS ============ */
+.slips{display:grid;grid-template-columns:repeat(auto-fit,minmax(248px,1fr));gap:13px;margin-top:13px}
+.slip{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.slip-hd{padding:12px 16px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:9px}
+.slip-hd .s{font-size:13px;font-weight:650}
+.slip-hd .no{font-size:10.5px;opacity:.65;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.slip-li{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;font-size:12px;border-bottom:1px solid var(--line-2);color:var(--ink-2)}
+.slip-li:last-child{border-bottom:0}
+.slip-li b{color:var(--ink);font-weight:650}
+.slip-ft{padding:10px 16px;background:var(--bg);font-size:11.5px;color:var(--ink-3);display:flex;justify-content:space-between}
+
+/* ============ RECEIVING ============ */
+.recv{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);margin-top:20px;overflow:hidden}
+.recv-hd{padding:15px 18px;border-bottom:1px solid var(--line-2);display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.recv-hd .ic{width:32px;height:32px;border-radius:9px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.recv-hd .t{font-size:14.5px;font-weight:700}
+.recv-hd .s{font-size:11.5px;color:var(--ink-3)}
+.recv-li{display:flex;align-items:center;gap:13px;padding:11px 18px;border-bottom:1px solid var(--line-2);font-size:13px;flex-wrap:wrap}
+.recv-li:last-child{border-bottom:0}
+.recv-li .nm{flex:1;min-width:140px}
+.recv-li .nm .cn{font-size:11.5px;color:var(--ink-3)}
+.recv-li .q{font-weight:650;white-space:nowrap}
+.recv-li.short{background:var(--red-soft)}
+.recv-li.short .q{color:var(--red)}
+.chip{font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--card);cursor:pointer;font-family:inherit;color:var(--ink-2);transition:.15s}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip.bad.on{background:var(--red);border-color:var(--red)}
+
+/* ============ OWNER ============ */
+.ocards{display:grid;grid-template-columns:repeat(auto-fit,minmax(192px,1fr));gap:12px;margin-top:20px}
+.oc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:17px 19px;box-shadow:var(--shadow)}
+.oc .l{font-size:11.5px;color:var(--ink-3);letter-spacing:.03em;margin-bottom:7px;display:flex;align-items:center;gap:6px}
+.oc .v{font-size:27px;font-weight:700;letter-spacing:-.035em;line-height:1.05}
+.oc .d{font-size:11.5px;color:var(--ink-3);margin-top:5px}
+.oc.warn{border-color:#f0dcbb;background:linear-gradient(180deg,#fffdf8,#fff)}
+.oc.warn .v{color:var(--amber)}
+table.rec{width:100%;border-collapse:collapse;font-size:13px}
+table.rec th{text-align:left;padding:11px 18px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line);font-weight:600;background:var(--bg)}
+table.rec th.r,table.rec td.r{text-align:right}
+table.rec td{padding:12px 18px;border-bottom:1px solid var(--line-2)}
+table.rec tbody tr:last-child td{border-bottom:0}
+table.rec tr.me td{background:var(--brand-soft)}
+table.rec tr.sum td{background:var(--bg);font-weight:700;border-top:1.5px solid var(--line)}
+table.rec td b{font-weight:650}
+.sh{display:none;font-size:11px;color:var(--ink-3);margin:-4px 0 8px;text-align:right;letter-spacing:.02em}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px}
+
+/* ============ EMPTY ============ */
+.empty{text-align:center;padding:56px 24px;color:var(--ink-3)}
+.empty svg{opacity:.22;margin-bottom:14px}
+.empty .t{font-size:15px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+.empty .s{font-size:13px;max-width:380px;margin:0 auto;line-height:1.6}
+
+/* ============ MODAL ============ */
+.ov{position:fixed;inset:0;background:rgba(16,19,34,.52);backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px;overflow-y:auto}
+.ov.on{display:flex}
+.md{background:var(--card);border-radius:18px;max-width:470px;width:100%;box-shadow:var(--shadow-lg);overflow:hidden;animation:pop .26s cubic-bezier(.3,1.4,.5,1)}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.md-top{padding:30px 28px 22px;text-align:center;border-bottom:1px solid var(--line-2)}
+.md-ic{width:56px;height:56px;border-radius:50%;background:var(--brand-soft);display:flex;align-items:center;justify-content:center;margin:0 auto 15px;color:var(--brand)}
+.md-top h3{font-size:20px;letter-spacing:-.02em;margin-bottom:6px}
+.md-top p{font-size:13px;color:var(--ink-3)}
+.md-bd{padding:20px 28px}
+.ben{display:flex;gap:12px;padding:11px 0;border-bottom:1px dashed var(--line);align-items:flex-start}
+.ben:last-child{border-bottom:0}
+.ben .bi{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ben .bt{font-size:13.5px;font-weight:650;line-height:1.35}
+.ben .bs{font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.45}
+.ord-row{display:flex;justify-content:space-between;padding:8px 0;font-size:13px;border-bottom:1px dashed var(--line);color:var(--ink-2)}
+.ord-row:last-of-type{border-bottom:0}
+.ord-row b{color:var(--ink);font-weight:650}
+.ord-row.tot{border-top:1.5px solid var(--line);margin-top:5px;padding-top:12px;font-size:15px}
+.ord-row.tot b{font-size:19px;letter-spacing:-.02em}
+.md-ft{padding:0 28px 26px;display:flex;flex-direction:column;gap:9px}
+.md-ft .btn,.md-ft .btn-p{width:100%;padding:13px;font-size:14px;text-align:center}
+
+/* ============ TOAST ============ */
+.toast{position:fixed;bottom:118px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;font-size:13px;padding:11px 20px;border-radius:11px;opacity:0;pointer-events:none;transition:.26s;z-index:150;box-shadow:var(--shadow-lg);max-width:88vw;text-align:center}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+/* ============ RESPONSIVE ============ */
+@media(max-width:980px){
+  /* 三行：① logo + 工具  ② 行业 + 门店  ③ 角色切换 */
+  .hd{flex-wrap:wrap;gap:10px;padding:12px 0}
+  .hd-sp{display:none}
+  .logo{order:1}
+  .hd-util{order:2;margin-left:auto}
+  .hd::before{content:'';order:3;flex-basis:100%;height:0}
+  .ind-badge{order:4;flex-shrink:1}
+  .store-pick{order:5;flex:1 1 auto;justify-content:center;min-width:0}
+  .role-sw{order:6;width:100%}
+  .role-sw button{flex:1;padding:8px 6px;font-size:12px;min-width:0}
+}
+@media(max-width:900px){
+  .plan2{grid-template-columns:1fr}
+}
+
+/* ---- 登录页 · 平板 1023↓：落为单列，左栏居中 ---- */
+@media(max-width:1023px){
+  .lg-wrap{grid-template-columns:minmax(0,1fr);gap:40px;padding:64px 32px;
+    max-width:620px;align-content:center;text-align:center}
+  .lg-mk{margin:0 auto 22px}
+  .lg-h1{font-size:clamp(50px,9vw,68px)}
+  .lg-zh{margin:0 auto 34px}
+  .lg-list{max-width:460px;margin:0 auto;text-align:left}
+  .lg-lb{text-align:left}
+  .ind-c,.role-c{text-align:left}
+  .ind-c{text-align:center}
+  .role-c:hover{transform:translateY(-3px)}
+}
+
+/* ---- 登录页 · 手机 639↓ ---- */
+@media(max-width:639px){
+  .lg-wrap{padding:44px 16px 40px;gap:32px}
+  .lg-mk{width:46px;height:46px;margin-bottom:18px}
+  .lg-badge{font-size:10px;letter-spacing:.17em;padding:6px 13px 6px 10px;margin-bottom:20px}
+  .lg-h1{font-size:clamp(42px,13vw,56px);margin-bottom:14px}
+  .lg-zh{font-size:15px;margin-bottom:28px;letter-spacing:.05em}
+  .lg-list{gap:17px}
+  .lg-list b{font-size:14px}
+  .lg-list i{font-size:13px;line-height:1.7}
+  .lg-shell{border-radius:24px;padding:6px}
+  .lg-core{border-radius:19px;padding:24px 18px 22px}
+  .ind-g{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .ind-c{min-height:98px;padding:15px 6px 12px}
+  .ind-c .ic{width:36px;height:36px;margin-bottom:9px}
+  .role-c{min-height:66px;padding:14px 15px}
+  .lg-go{font-size:15px;padding:6px 6px 6px 22px}
+  .lg-go .arr{width:44px;height:44px}
+  .lg-lb em{display:none}
+}
+@media(max-width:640px){
+  .wrap{padding:0 14px}
+  .grid{grid-template-columns:1fr}
+  .cart-l1 .t{font-size:19px}
+  .btn-sub{padding:12px 20px;font-size:13.5px}
+  .cartbar .wrap{padding:12px 14px;gap:12px}
+  .agg-d{padding-left:18px}
+  /* 统计卡改两列，避免一屏只看到一张 */
+  .ocards,.kstats{grid-template-columns:1fr 1fr;gap:9px}
+  .oc,.kst{padding:14px 13px}
+  .oc .v{font-size:23px}
+  .kst .v{font-size:22px}
+  .oc .l,.kst .l{font-size:11px}
+  .oc .d,.kst .d{font-size:10.5px}
+  /* 表格给最小宽度，宁可横滑也不要挤变形 */
+  table.rec{min-width:580px}
+  .sh{display:block}
+  table.rec th,table.rec td{padding:10px 12px;font-size:12px}
+  .md-top{padding:26px 20px 19px}
+  .md-bd,.md-ft{padding-left:20px;padding-right:20px}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== LOGIN ==================== -->
+<div id="login">
+<div class="lg-grain"></div>
+<div class="lg-wrap">
+
+  <div class="lg-left">
+    <svg class="lg-mk" viewBox="0 0 56 56" fill="none" aria-hidden="true">
+      <rect width="56" height="56" rx="16" fill="#D9C08E"/>
+      <path d="M17 20h22M17 28h16M17 36h10" stroke="#0A0B1C" stroke-width="3.1" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <span class="lg-badge"><span class="dot"></span>Multi-Store Requisition</span>
+      <h1 class="lg-h1">Orderly</h1>
+      <p class="lg-zh">门店要货 · 中央配货 · 月底对账</p>
+    </div>
+    <ul class="lg-list">
+      <li><span class="n">01</span><div><b>按用量自动算订量</b><i>依近四周用量与安全库存给出建议，不靠拍脑袋</i></div></li>
+      <li><span class="n">02</span><div><b>多店需求自动汇总</b><i>中央厨房一屏看到今天要做多少、要订多少</i></div></li>
+      <li><span class="n">03</span><div><b>内外采购分开对账</b><i>内部调拨与外部采购各走各的账，月底一笔清</i></div></li>
+    </ul>
+  </div>
+
+  <div class="lg-right">
+    <div class="lg-shell">
+      <div class="lg-core">
+        <div class="lg-step">
+          <div class="lg-lb"><i>1</i>选择你的行业<em>Business</em></div>
+          <div class="ind-g" id="indG"></div>
+        </div>
+        <div class="lg-step">
+          <div class="lg-lb"><i>2</i>选择登录角色<em>Role</em></div>
+          <div class="role-g" id="roleG"></div>
+        </div>
+        <button class="lg-go" id="lgGo" disabled onclick="enterApp()">
+          <span>进入系统 Enter</span>
+          <span class="arr"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13"/><path d="M12.5 5.5L19 12l-6.5 6.5"/></svg></span>
+        </button>
+        <div class="lg-ft">示例数据 · Sample data for demonstration</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== APP ==================== -->
+<div id="app" class="hide">
+
+<header>
+<div class="wrap hd">
+  <div class="logo">
+    <svg class="logo-mk" viewBox="0 0 40 40" fill="none">
+      <rect width="40" height="40" rx="11" fill="#2a3566"/>
+      <path d="M12 14.5h16M12 20h11.5M12 25.5h7" stroke="#fff" stroke-width="2.3" stroke-linecap="round"/>
+    </svg>
+    <div class="logo-tx"><strong>Orderly</strong><span>Requisition</span></div>
+  </div>
+  <div class="ind-badge" id="indBadge"></div>
+  <div class="hd-sp"></div>
+  <div class="store-pick" id="storePick"><span class="dot"></span><b id="spName">—</b></div>
+  <div class="hd-util">
+    <span class="sample">示例数据 Sample</span>
+    <button title="重置 Reset" onclick="resetDemo()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg></button>
+    <button title="切换行业/角色 Switch" onclick="backToLogin()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 8h14l-3-3M20 16H6l3 3"/></svg></button>
+  </div>
+  <div class="role-sw" id="roleSw">
+    <button data-r="store"   onclick="setRole('store',this)">门店 Store</button>
+    <button data-r="kitchen" onclick="setRole('kitchen',this)">中央厨房 Kitchen<span class="pip hide" id="pipK"></span></button>
+    <button data-r="owner"   onclick="setRole('owner',this)">总部 Owner</button>
+  </div>
+</div>
+</header>
+
+<div class="cutoff">
+  <div class="wrap">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+    <span>截单 Cutoff <b>今日 17:00</b></span><span style="opacity:.35">·</span>
+    <span>送达 Delivery <b id="delDate">明日</b></span><span style="opacity:.35">·</span>
+    <span id="countdown">距截单还有 4 小时 54 分</span>
+  </div>
+</div>
+
+<!-- ---------- STORE ---------- -->
+<main class="wrap" id="vStore">
+  <div class="budget">
+    <div class="budget-top">
+      <div class="lb">本周订货预算 Weekly Budget · 已用 <b id="bUsed">$0</b> / <b id="bTot">$0</b> · 剩余 <b id="remain">$0</b></div>
+      <div class="lb" style="font-size:12px;color:var(--ink-3)">含本次购物车 incl. cart</div>
+    </div>
+    <div class="bar"><i id="barUsed" style="width:0%"></i><i class="cart" id="barCart" style="width:0%"></i></div>
+  </div>
+
+  <div id="recvWrap"></div>
+
+  <div class="tools">
+    <div class="srch">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="text" id="q" placeholder="搜索商品 Search products…" oninput="renderGrid()">
+    </div>
+    <button class="btn btn-p" onclick="fillSuggested()">⚡ 一键智能补货 Smart Fill</button>
+    <button class="btn" onclick="clearCart()">清空 Clear</button>
+  </div>
+
+  <div class="cats" id="cats"></div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<!-- ---------- KITCHEN ---------- -->
+<main class="wrap hide" id="vKitchen">
+  <div class="kstats" id="kStats"></div>
+
+  <div class="sec-h">
+    <h2>今日汇总需求 Aggregated Demand</h2>
+    <span class="hint">点任意一行展开，看各门店分别要了多少</span>
+  </div>
+  <div class="panel" id="aggList"></div>
+
+  <div class="sec-h">
+    <h2>排产与采购 Production &amp; Purchasing</h2>
+    <span class="hint">自制品安排生产，外采品统一下单</span>
+  </div>
+  <div class="plan2" id="planBox"></div>
+
+  <div class="sec-h">
+    <h2>配送单 Delivery Notes</h2>
+    <button class="btn btn-p" id="btnSlip" onclick="genSlips()">生成配送单 Generate</button>
+  </div>
+  <div id="slipBox"></div>
+  <div style="height:40px"></div>
+</main>
+
+<!-- ---------- OWNER ---------- -->
+<main class="wrap hide" id="vOwner">
+  <div class="ocards" id="oCards"></div>
+
+  <div class="sec-h">
+    <h2>今日订单 Today's Orders</h2>
+    <span class="hint">各门店下单情况与异常</span>
+  </div>
+  <div class="sh">← 左右滑动查看完整表格</div>
+  <div class="panel" style="overflow-x:auto"><table class="rec" id="tToday"></table></div>
+
+  <div class="sec-h">
+    <h2>本月内部对账 Monthly Reconciliation</h2>
+    <span class="hint">内部调拨与外部采购分开计算</span>
+  </div>
+  <div class="sh">← 左右滑动查看完整表格</div>
+  <div class="panel" style="overflow-x:auto"><table class="rec" id="tRecon"></table></div>
+  <div style="height:40px"></div>
+</main>
+
+<!-- ---------- CART BAR ---------- -->
+<div class="cartbar hide" id="cartBar">
+  <div class="wrap">
+    <div>
+      <div class="cart-l1">
+        <span class="n"><b id="cCount">0</b> 项商品 items</span>
+        <span class="t" id="cTotal">$0.00</span>
+      </div>
+      <div class="cart-l2 ok" id="cNote">在自动审批额度内 Within auto-approval limit</div>
+    </div>
+    <button class="btn-sub" id="btnSub" onclick="submitOrder()" disabled>提交订单 Submit</button>
+  </div>
+</div>
+
+<!-- ---------- MODAL ---------- -->
+<div class="ov" id="ov"><div class="md" id="mdBox"></div></div>
+<div class="toast" id="toast"></div>
+
+</div><!-- /app -->
+
+<script>
+/* ==================== SVG ART ==================== */
+const ART = {
+
+juice:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fff4e6"/><path d="M20 20h24l-3 26a4 4 0 01-4 3.6H27a4 4 0 01-4-3.6L20 20z" fill="#f5a623"/><path d="M20 20h24l-.7 6H20.7L20 20z" fill="#e8921a"/><rect x="17" y="15" width="30" height="6" rx="3" fill="#fbbf5c"/><path d="M38 26c-2 5-2 10 0 15" stroke="#fff" stroke-opacity=".45" stroke-width="2.5" stroke-linecap="round"/><circle cx="27" cy="33" r="2" fill="#fff" fill-opacity=".4"/></svg>`,
+green:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#edf7ef"/><path d="M20 20h24l-3 26a4 4 0 01-4 3.6H27a4 4 0 01-4-3.6L20 20z" fill="#4a9d5f"/><path d="M20 20h24l-.7 6H20.7L20 20z" fill="#3d8450"/><rect x="17" y="15" width="30" height="6" rx="3" fill="#6cbd80"/><path d="M32 29c-4 3-5 8-3 12" stroke="#a8dcb5" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="36" cy="34" rx="3.5" ry="5" transform="rotate(25 36 34)" fill="#7fc994"/></svg>`,
+milk:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#faf6f0"/><path d="M24 24h16v22a4 4 0 01-4 4h-8a4 4 0 01-4-4V24z" fill="#efe2cf"/><path d="M26 14h12l2 10H24l2-10z" fill="#e3d2b8"/><rect x="27" y="11" width="10" height="5" rx="2" fill="#d4bf9d"/><ellipse cx="32" cy="36" rx="5" ry="3" fill="#fff" fill-opacity=".55"/></svg>`,
+bread:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf3e3"/><path d="M14 36c0-9 8-15 18-15s18 6 18 15c0 5-3 8-7 8H21c-4 0-7-3-7-8z" fill="#c98b4b"/><path d="M14 38c0 5 3 8 7 8h22c4 0 7-3 7-8H14z" fill="#b5783c"/><path d="M23 28c2-3 5-4 8-3M34 26c3-1 6 0 8 3" stroke="#e0a66b" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+orange:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fff3e0"/><circle cx="32" cy="35" r="17" fill="#f08c2e"/><circle cx="32" cy="35" r="17" fill="url(#og)" fill-opacity=".25"/><path d="M32 18c0-3 2-5 5-5" stroke="#5d8a3a" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="38" cy="16" rx="5" ry="3" transform="rotate(-25 38 16)" fill="#6ba53f"/><circle cx="26" cy="30" r="3.5" fill="#fff" fill-opacity=".3"/><defs><radialGradient id="og" cx=".35" cy=".3" r=".8"><stop stop-color="#fff"/><stop offset="1" stop-color="#d4700f"/></radialGradient></defs></svg>`,
+kale:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#eef7ee"/><path d="M32 50V26" stroke="#5a8c42" stroke-width="3" stroke-linecap="round"/><path d="M32 30c-6-8-14-9-18-6 2 7 10 12 18 10z" fill="#4f9a4a"/><path d="M32 30c6-8 14-9 18-6-2 7-10 12-18 10z" fill="#5fae57"/><path d="M32 40c-5-6-11-7-14-5 2 6 8 9 14 7z" fill="#3f8a3c"/><path d="M32 40c5-6 11-7 14-5-2 6-8 9-14 7z" fill="#4f9a4a"/></svg>`,
+ginger:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf6e8"/><path d="M22 34c0-6 5-10 11-10s11 4 11 9c0 6-5 9-11 9-3 0-5 2-5 5 0 2-2 4-4 4s-4-2-4-4c0-5 2-8 2-13z" fill="#d9a75c"/><ellipse cx="28" cy="29" rx="4" ry="3" fill="#e8bd7c"/><path d="M40 26c3-2 6-1 7 1-2 3-5 4-7 2z" fill="#c9954a"/></svg>`,
+apple:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdeeef"/><path d="M32 22c-3-3-9-3-12 1-4 5-2 14 2 19 3 4 6 5 10 3 4 2 7 1 10-3 4-5 6-14 2-19-3-4-9-4-12-1z" fill="#d9434a"/><path d="M32 22c-3-3-9-3-12 1-4 5-2 14 2 19 2 3 5 4 8 3V22z" fill="#c23740"/><path d="M32 22v-5" stroke="#6b4a2a" stroke-width="2.5" stroke-linecap="round"/><ellipse cx="37" cy="16" rx="5" ry="3" transform="rotate(-20 37 16)" fill="#5f9a3d"/></svg>`,
+flour:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f8f5ef"/><path d="M20 24c0-3 5-6 12-6s12 3 12 6v22a4 4 0 01-4 4H24a4 4 0 01-4-4V24z" fill="#e4dac7"/><path d="M20 24c0 3 5 5 12 5s12-2 12-5" stroke="#cfc2a9" stroke-width="2"/><rect x="26" y="33" width="12" height="10" rx="2" fill="#fff" fill-opacity=".7"/><path d="M29 37h6M29 40h4" stroke="#b5a68a" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+butter:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fffbe8"/><path d="M16 30l10-6h22v16H26l-10-6v-4z" fill="#f2d04e"/><path d="M26 24v16" stroke="#dcb833" stroke-width="2"/><path d="M26 24h22v4H26z" fill="#f7de7a"/></svg>`,
+cup:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#eef4f8"/><path d="M22 20h20l-2.5 24a4 4 0 01-4 3.6h-7a4 4 0 01-4-3.6L22 20z" fill="#cfe0ea" fill-opacity=".85"/><rect x="19" y="16" width="26" height="5" rx="2.5" fill="#9fc2d6"/><path d="M38 25c-1.5 5-1.5 11 0 15" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/><path d="M26 25l1 15" stroke="#b3d0e0" stroke-width="1.6"/></svg>`,
+lid:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f0f4f6"/><ellipse cx="32" cy="36" rx="18" ry="6" fill="#c3d4de"/><path d="M14 36c0-7 8-13 18-13s18 6 18 13" fill="#dce8ef"/><ellipse cx="32" cy="23" rx="3.5" ry="2" fill="#a8c0ce"/></svg>`,
+bag:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#faf4ea"/><path d="M18 24h28v24a3 3 0 01-3 3H21a3 3 0 01-3-3V24z" fill="#d8b98c"/><path d="M18 24h28v5H18z" fill="#c9a876"/><path d="M26 24v-4a6 6 0 0112 0v4" stroke="#a8884f" stroke-width="2.4"/></svg>`,
+label:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f5f6f8"/><rect x="16" y="20" width="32" height="24" rx="3" fill="#fff" stroke="#c9d2da" stroke-width="2"/><path d="M22 28h14M22 33h20M22 38h10" stroke="#b0bcc6" stroke-width="2.2" stroke-linecap="round"/></svg>`,
+glove:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#eef6f4"/><path d="M24 30v-8a2.5 2.5 0 015 0v8m0 0v-11a2.5 2.5 0 015 0v11m0 0v-9a2.5 2.5 0 015 0v12m0 0v-5a2.5 2.5 0 015 0v12c0 7-5 12-12 12h-4c-7 0-11-5-11-11V30a2.5 2.5 0 015 0v3" fill="#a8d8ce" stroke="#6cb5a6" stroke-width="2"/></svg>`,
+sani:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#eef3fa"/><path d="M24 28h16v20a3 3 0 01-3 3H27a3 3 0 01-3-3V28z" fill="#8fb8e0"/><rect x="28" y="18" width="8" height="9" rx="2" fill="#6b9bca"/><rect x="26" y="14" width="12" height="5" rx="2.5" fill="#527fa8"/><rect x="28" y="34" width="8" height="9" rx="2" fill="#fff" fill-opacity=".6"/></svg>`,
+towel:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f7f7f5"/><rect x="16" y="22" width="32" height="20" rx="3" fill="#e2e6e3"/><path d="M16 28h32M16 34h32" stroke="#cbd2cd" stroke-width="2"/><rect x="28" y="22" width="8" height="20" fill="#d4dad6"/></svg>`,
+/* --- boba --- */
+pearl:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#efeae6"/><circle cx="24" cy="40" r="7" fill="#2e2622"/><circle cx="38" cy="43" r="7" fill="#3a302a"/><circle cx="31" cy="28" r="7" fill="#241d1a"/><circle cx="44" cy="30" r="6" fill="#332a24"/><circle cx="17" cy="27" r="5.5" fill="#2e2622"/><circle cx="22" cy="37" r="2" fill="#fff" fill-opacity=".3"/><circle cx="29" cy="25" r="2" fill="#fff" fill-opacity=".28"/></svg>`,
+tea:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#eef3e9"/><path d="M32 14c9 6 12 14 9 21-3 7-11 10-17 7" stroke="#4d7a37" stroke-width="2.4" fill="#79a85c" fill-opacity=".55"/><path d="M24 42c-2-10 2-20 8-28" stroke="#3c6329" stroke-width="2.2" stroke-linecap="round"/><path d="M28 34l7-5M27 27l6-4M30 40l7-5" stroke="#3c6329" stroke-width="1.6" stroke-linecap="round" opacity=".65"/></svg>`,
+syrup:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf2e0"/><path d="M26 14h12v6l5 7v24a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V27l5-7v-6z" fill="#c98a2e"/><path d="M21 32h22v18a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V32z" fill="#8f5c14"/><rect x="25" y="11" width="14" height="5" rx="2" fill="#5e3c0c"/><ellipse cx="28" cy="38" rx="2.4" ry="4" fill="#fff" fill-opacity=".22"/></svg>`,
+sealfilm:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#e9f0f5"/><circle cx="32" cy="32" r="19" fill="#b9cfdd"/><circle cx="32" cy="32" r="19" stroke="#6f93a8" stroke-width="2"/><circle cx="32" cy="32" r="6" fill="#fff"/><circle cx="32" cy="32" r="6" stroke="#6f93a8" stroke-width="1.6"/><path d="M32 13v6M32 45v6M13 32h6M45 32h6" stroke="#6f93a8" stroke-width="2" stroke-linecap="round" opacity=".55"/></svg>`,
+straw:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdeef0"/><rect x="21" y="10" width="8" height="44" rx="4" fill="#d9566a" transform="rotate(-9 25 32)"/><rect x="34" y="10" width="8" height="44" rx="4" fill="#4a9ec4" transform="rotate(9 38 32)"/><path d="M22 19l7-2M22 29l7-2M22 39l7-2" stroke="#fff" stroke-width="2.6" stroke-linecap="round" opacity=".55"/></svg>`,
+/* --- chinese --- */
+rice:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f6f1e4"/><path d="M18 24h28l4 26a3 3 0 0 1-3 3.4H17A3 3 0 0 1 14 50l4-26z" fill="#d9c9a3"/><path d="M18 24h28l1.2 8H16.8L18 24z" fill="#bda77b"/><ellipse cx="26" cy="40" rx="3" ry="5" fill="#fff" fill-opacity=".5" transform="rotate(-25 26 40)"/><ellipse cx="34" cy="45" rx="3" ry="5" fill="#fff" fill-opacity=".45" transform="rotate(18 34 45)"/><ellipse cx="38" cy="36" rx="2.6" ry="4.4" fill="#fff" fill-opacity=".4" transform="rotate(-12 38 36)"/></svg>`,
+oil:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fcf6e3"/><path d="M27 12h10v8c6 3 8 7 8 12v19a3 3 0 0 1-3 3H22a3 3 0 0 1-3-3V32c0-5 2-9 8-12v-8z" fill="#e8b93c"/><path d="M19 34h26v17a3 3 0 0 1-3 3H22a3 3 0 0 1-3-3V34z" fill="#c4901c"/><rect x="26" y="9" width="12" height="5" rx="2" fill="#7c5a0e"/><ellipse cx="25" cy="42" rx="2.2" ry="4" fill="#fff" fill-opacity=".25"/></svg>`,
+soy:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#efe7e2"/><path d="M27 13h10v7l6 8v24a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V28l6-8v-7z" fill="#4a3127"/><rect x="24" y="33" width="16" height="13" rx="2" fill="#f0e5d6"/><rect x="26" y="10" width="12" height="5" rx="2" fill="#2c1c15"/><path d="M27 37h10M27 41h7" stroke="#6b4a38" stroke-width="1.6" stroke-linecap="round"/></svg>`,
+chicken:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdeeea"/><path d="M22 20c7-6 18-5 23 2 5 8 1 18-7 21-9 3-18-2-20-10-1.5-6 0-10 4-13z" fill="#f0b9a4"/><path d="M26 42l-6 9" stroke="#e8d3c6" stroke-width="6" stroke-linecap="round"/><path d="M26 42l-6 9" stroke="#d9a890" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="51" r="4" fill="#fff" stroke="#d9a890" stroke-width="1.8"/><path d="M29 27c3-2 8-2 11 1" stroke="#d98f72" stroke-width="2" stroke-linecap="round" opacity=".6"/></svg>`,
+noodle:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fcf5e6"/><path d="M14 46c5-4 5-26 0-30M22 46c5-4 5-26 0-30M30 46c5-4 5-26 0-30M38 46c5-4 5-26 0-30M46 46c5-4 5-26 0-30" stroke="#e3c272" stroke-width="3.4" stroke-linecap="round"/><rect x="11" y="42" width="42" height="8" rx="4" fill="#c49a3e"/></svg>`,
+broth:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f5ece0"/><path d="M14 30h36v14c0 6-5 10-12 10h-12c-7 0-12-4-12-10V30z" fill="#c98f45"/><ellipse cx="32" cy="30" rx="18" ry="5" fill="#e0b068"/><path d="M50 34h4a4 4 0 0 1 0 8h-4" stroke="#8f6020" stroke-width="2.6" fill="none"/><path d="M25 17c0 3 3 3 3 6M33 14c0 4 3 4 3 7M41 18c0 3 2 3 2 5" stroke="#b8905a" stroke-width="2" stroke-linecap="round" opacity=".45"/></svg>`,
+/* --- grocery / bakery extras --- */
+egg:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf7ea"/><ellipse cx="24" cy="34" rx="10" ry="13" fill="#fff" stroke="#e0d4bd" stroke-width="1.8"/><ellipse cx="40" cy="38" rx="10" ry="13" fill="#f6ecd6" stroke="#dfd0b2" stroke-width="1.8"/><ellipse cx="21" cy="29" rx="3" ry="4.5" fill="#fff" fill-opacity=".9"/></svg>`,
+sugar:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f6f7fa"/><path d="M17 23h30l3 27a3 3 0 0 1-3 3.3H17A3 3 0 0 1 14 50l3-27z" fill="#dfe4ec"/><path d="M17 23h30l.9 7H16.1l.9-7z" fill="#c2cad8"/><rect x="23" y="35" width="7" height="7" rx="1.4" fill="#fff"/><rect x="33" y="40" width="7" height="7" rx="1.4" fill="#fff"/><rect x="29" y="30" width="7" height="7" rx="1.4" fill="#fff" fill-opacity=".8"/></svg>`,
+yeast:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f3efe6"/><path d="M22 18h20v30a7 7 0 0 1-7 7h-6a7 7 0 0 1-7-7V18z" fill="#b8763a"/><rect x="20" y="13" width="24" height="7" rx="2.5" fill="#8a5425"/><circle cx="29" cy="33" r="3" fill="#f0e2cd" fill-opacity=".7"/><circle cx="37" cy="40" r="2.4" fill="#f0e2cd" fill-opacity=".6"/><circle cx="33" cy="26" r="2" fill="#f0e2cd" fill-opacity=".55"/></svg>`,
+choco:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f2ebe6"/><rect x="15" y="18" width="34" height="28" rx="3" fill="#5a3620"/><path d="M26 18v28M37 18v28M15 28h34M15 37h34" stroke="#3d2314" stroke-width="2"/><path d="M15 18h34v5H15z" fill="#fff" fill-opacity=".12"/></svg>`,
+bottle:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#e9f4f6"/><path d="M27 12h10v7c5 2 6 6 6 10v22a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V29c0-4 1-8 6-10v-7z" fill="#5fb6c4"/><path d="M21 33h22v18a3 3 0 0 1-3 3H24a3 3 0 0 1-3-3V33z" fill="#3b8f9e"/><rect x="26" y="9" width="12" height="5" rx="2" fill="#24646f"/><rect x="24" y="36" width="16" height="9" rx="2" fill="#fff" fill-opacity=".75"/></svg>`,
+snack:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf0e6"/><path d="M19 17l5 4h16l5-4v30l-5 4H24l-5-4V17z" fill="#e8893f"/><path d="M19 17l5 4h16l5-4" stroke="#b8651f" stroke-width="2" fill="none"/><path d="M19 47l5-4h16l5 4" stroke="#b8651f" stroke-width="2" fill="none"/><circle cx="29" cy="30" r="2.6" fill="#fff" fill-opacity=".65"/><circle cx="36" cy="36" r="2.2" fill="#fff" fill-opacity=".5"/></svg>`,
+deli:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#f7eee6"/><ellipse cx="32" cy="36" rx="20" ry="13" fill="#e6d2bc"/><ellipse cx="32" cy="33" rx="20" ry="13" fill="#f2e3d0"/><path d="M22 31c3-3 7-3 10 0s7 3 10 0" stroke="#c49a74" stroke-width="2.2" stroke-linecap="round" fill="none"/><circle cx="26" cy="37" r="2" fill="#c0734a"/><circle cx="37" cy="38" r="2" fill="#c0734a"/></svg>`,
+cheese:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#fdf6e0"/><path d="M12 36l20-14 20 14v9a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3v-9z" fill="#edcb5e"/><path d="M12 36l20-14 20 14v9a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3v-9z" fill="#edcb5e"/><path d="M12 36l20-14 20 14v9a3 3 0 0 1-3 3H15a3 3 0 0 1-3-3v-9z" fill="#edcb5e"/><circle cx="24" cy="40" r="3.4" fill="#fdf6e0"/><circle cx="38" cy="38" r="2.6" fill="#fdf6e0"/><circle cx="33" cy="44" r="2" fill="#fdf6e0"/></svg>`,
+veg:`<svg viewBox="0 0 64 64" fill="none"><rect width="64" height="64" fill="#edf5e8"/><circle cx="24" cy="38" r="11" fill="#d94f43"/><circle cx="40" cy="34" r="9" fill="#e8713f"/><path d="M24 27c0-3 2-5 5-5" stroke="#4d7a37" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="30" cy="24" rx="5" ry="3" transform="rotate(-25 30 24)" fill="#6ba53f"/><circle cx="20" cy="34" r="2.6" fill="#fff" fill-opacity=".3"/></svg>`
+};
+</script>
+
+<script>
+/* ==================== INDUSTRY ICONS ==================== */
+const ICO_W = 'fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"';
+const INDICON = {
+juice:`<svg viewBox="0 0 32 32" ${ICO_W}><path d="M9.5 11h13l-1.5 15.2a2 2 0 0 1-2 1.8h-6a2 2 0 0 1-2-1.8L9.5 11z"/><path d="M10.2 17.5h11.6"/><path d="M14 11l4.8-6"/><path d="M21.5 6.4c1-1.4 2.6-1.8 4-1.2-.3 1.5-1.5 2.6-3 2.7"/></svg>`,
+bakery:`<svg viewBox="0 0 32 32" ${ICO_W}><path d="M4.5 20.5c0-5.3 5.1-9.5 11.5-9.5s11.5 4.2 11.5 9.5v3.6a2 2 0 0 1-2 2h-19a2 2 0 0 1-2-2v-3.6z"/><path d="M11.6 14.4L9.4 19M16 13.6L14 18.6M20.4 14.4L18.4 19"/></svg>`,
+boba:`<svg viewBox="0 0 32 32" ${ICO_W}><path d="M9 12.5h14l-1.4 14a2 2 0 0 1-2 1.8h-7.2a2 2 0 0 1-2-1.8L9 12.5z"/><path d="M7.3 12.5h17.4"/><path d="M14.5 12.5V6h4.8"/><circle cx="13.6" cy="23.2" r="1.35"/><circle cx="18.4" cy="23.8" r="1.35"/><circle cx="16" cy="26.2" r="1.35"/></svg>`,
+chinese:`<svg viewBox="0 0 32 32" ${ICO_W}><path d="M4.5 15.5h21c0 5.8-4.7 10.5-10.5 10.5S4.5 21.3 4.5 15.5z"/><path d="M3.5 15.5h23"/><path d="M19.5 6.2l7.8 5.4M21.6 4.2l7.8 5.4"/><path d="M11 10.5c0-1.5 1.4-1.5 1.4-3M15.6 9c0-1.6 1.4-1.6 1.4-3.1"/></svg>`,
+grocery:`<svg viewBox="0 0 32 32" ${ICO_W}><path d="M5.5 13.5h21v12a2 2 0 0 1-2 2h-17a2 2 0 0 1-2-2v-12z"/><path d="M4 13.5L6.2 7.5h19.6L28 13.5"/><path d="M4 13.5h24"/><path d="M12.5 27.5v-6.6h7v6.6"/></svg>`
+};
+
+/* ==================== INDUSTRY DATA ==================== */
+const STORES = [
+  {k:'dt', n:'Downtown',  cn:'市中心店'},
+  {k:'mt', n:'Midtown',   cn:'中城店'},
+  {k:'rv', n:'Riverside', cn:'河畔店'}
+];
+
+const IND = {
+juice:{
+  nm:'果汁轻食', en:'Juice & Smoothie', em:'🥤', budget:12000,
+  kitchen:'中央厨房 Central Kitchen',
+  cats:[{k:'own',n:'自制品 In-House'},{k:'produce',n:'生鲜 Produce'},{k:'pack',n:'包装 Packaging'},{k:'supply',n:'耗材 Supplies'}],
+  P:[
+  {id:1,n:'Cold-Pressed Orange Base',cn:'冷压橙汁基底',u:'1 Gal / 桶',un:'桶',c:'own',art:'juice',p:18.50,stock:4,safe:6,use:[12,10,14,11],own:1},
+  {id:2,n:'Green Detox Base',cn:'绿色排毒基底',u:'1 Gal / 桶',un:'桶',c:'own',art:'green',p:22.00,stock:3,safe:5,use:[8,9,7,10],own:1},
+  {id:3,n:'House Almond Milk',cn:'自制杏仁奶',u:'1/2 Gal',un:'瓶',c:'own',art:'milk',p:14.75,stock:7,safe:6,use:[9,11,8,9],own:1},
+  {id:4,n:'Acai Blend Pack',cn:'巴西莓混合包',u:'10 lb / 袋',un:'袋',c:'own',art:'deli',p:46.00,stock:2,safe:4,use:[5,4,6,5],own:1},
+  {id:5,n:'Valencia Orange',cn:'瓦伦西亚橙',u:'40 lb / 箱',un:'箱',c:'produce',art:'orange',p:36.00,stock:2,safe:4,use:[6,7,5,8],sup:'Restaurant Depot',alt:'Sysco',altp:32.50},
+  {id:6,n:'Organic Kale',cn:'有机羽衣甘蓝',u:'24 ct / 箱',un:'箱',c:'produce',art:'kale',p:28.40,stock:3,safe:3,use:[4,5,4,6],sup:'Restaurant Depot'},
+  {id:7,n:'Fresh Ginger Root',cn:'鲜姜',u:'5 lb / 袋',un:'袋',c:'produce',art:'ginger',p:12.90,stock:5,safe:4,use:[3,4,3,4],sup:'H Mart Wholesale'},
+  {id:8,n:'Honeycrisp Apple',cn:'蜜脆苹果',u:'40 lb / 箱',un:'箱',c:'produce',art:'apple',p:42.00,stock:1,safe:3,use:[4,3,5,4],sup:'Sysco',alt:'Restaurant Depot',altp:38.75},
+  {id:9,n:'16oz Clear Cup',cn:'16盎司透明杯',u:'1000 / 箱',un:'箱',c:'pack',art:'cup',p:82.00,stock:2,safe:3,use:[4,5,4,5],sup:'Restaurant Depot',alt:'WebstaurantStore',altp:76.50},
+  {id:10,n:'Dome Lid',cn:'圆顶杯盖',u:'1000 / 箱',un:'箱',c:'pack',art:'lid',p:54.00,stock:4,safe:3,use:[4,4,5,4],sup:'WebstaurantStore'},
+  {id:11,n:'Kraft Carry Bag',cn:'牛皮纸手提袋',u:'500 / 捆',un:'捆',c:'pack',art:'bag',p:38.50,stock:3,safe:2,use:[3,2,3,3],sup:'Uline'},
+  {id:12,n:'Nitrile Gloves',cn:'丁腈手套',u:'1000 / 箱',un:'箱',c:'supply',art:'glove',p:44.00,stock:2,safe:2,use:[2,3,2,2],sup:'Uline'}
+  ]},
+
+bakery:{
+  nm:'烘焙', en:'Bakery', em:'🥐', budget:14000,
+  kitchen:'中央面包房 Central Bakehouse',
+  cats:[{k:'own',n:'自制品 In-House'},{k:'ingr',n:'原料 Ingredients'},{k:'pack',n:'包装 Packaging'},{k:'supply',n:'耗材 Supplies'}],
+  P:[
+  {id:1,n:'Sourdough Dough',cn:'酸种面团',u:'20 lb / 盆',un:'盆',c:'own',art:'bread',p:26.00,stock:3,safe:6,use:[11,9,12,10],own:1},
+  {id:2,n:'Croissant Dough Sheet',cn:'可颂面皮',u:'48 ct / 盘',un:'盘',c:'own',art:'bread',p:34.50,stock:2,safe:4,use:[7,8,6,8],own:1},
+  {id:3,n:'Pastry Cream',cn:'卡仕达奶油馅',u:'1 Gal / 桶',un:'桶',c:'own',art:'milk',p:21.00,stock:5,safe:4,use:[5,6,4,5],own:1},
+  {id:4,n:'Berry Jam Filling',cn:'莓果果酱馅',u:'10 lb / 桶',un:'桶',c:'own',art:'veg',p:29.00,stock:4,safe:3,use:[3,4,3,4],own:1},
+  {id:5,n:'Bread Flour T65',cn:'高筋面粉 T65',u:'50 lb / 袋',un:'袋',c:'ingr',art:'flour',p:31.50,stock:6,safe:5,use:[7,8,6,7],sup:'Sysco'},
+  {id:6,n:'Unsalted Butter',cn:'无盐黄油',u:'36 lb / 箱',un:'箱',c:'ingr',art:'butter',p:118.00,stock:1,safe:2,use:[3,2,3,3],sup:'Restaurant Depot',alt:'Sysco',altp:109.50},
+  {id:7,n:'Cane Sugar',cn:'蔗糖',u:'50 lb / 袋',un:'袋',c:'ingr',art:'sugar',p:38.00,stock:4,safe:3,use:[3,4,3,3],sup:'Sysco'},
+  {id:8,n:'Instant Dry Yeast',cn:'即发干酵母',u:'1 lb × 20',un:'箱',c:'ingr',art:'yeast',p:62.00,stock:1,safe:2,use:[2,2,1,2],sup:'Restaurant Depot'},
+  {id:9,n:'Large Eggs',cn:'大号鸡蛋',u:'15 doz / 箱',un:'箱',c:'ingr',art:'egg',p:49.50,stock:3,safe:4,use:[5,6,5,6],sup:'Restaurant Depot',alt:'US Foods',altp:45.90},
+  {id:10,n:'Dark Chocolate 64%',cn:'64% 黑巧克力',u:'22 lb / 箱',un:'箱',c:'ingr',art:'choco',p:94.00,stock:2,safe:2,use:[2,3,2,2],sup:'Sysco'},
+  {id:11,n:'Bakery Box 8"',cn:'8吋蛋糕盒',u:'200 / 箱',un:'箱',c:'pack',art:'bag',p:46.00,stock:3,safe:3,use:[4,3,4,4],sup:'Uline',alt:'WebstaurantStore',altp:41.25},
+  {id:12,n:'Food Service Film',cn:'食品保鲜膜',u:'6 rolls / 箱',un:'箱',c:'supply',art:'sealfilm',p:33.00,stock:2,safe:2,use:[2,2,3,2],sup:'Uline'}
+  ]},
+
+boba:{
+  nm:'奶茶', en:'Boba Tea', em:'🧋', budget:11000,
+  kitchen:'中央茶饮厨房 Central Tea Kitchen',
+  cats:[{k:'own',n:'自制品 In-House'},{k:'ingr',n:'原料 Ingredients'},{k:'pack',n:'包装 Packaging'},{k:'supply',n:'耗材 Supplies'}],
+  P:[
+  {id:1,n:'Brewed Black Tea Base',cn:'红茶茶汤',u:'2 Gal / 桶',un:'桶',c:'own',art:'tea',p:16.50,stock:3,safe:6,use:[13,11,14,12],own:1},
+  {id:2,n:'Jasmine Green Tea Base',cn:'茉莉绿茶汤',u:'2 Gal / 桶',un:'桶',c:'own',art:'tea',p:17.20,stock:4,safe:5,use:[9,10,8,9],own:1},
+  {id:3,n:'Cooked Tapioca Pearls',cn:'熟珍珠',u:'10 lb / 盒',un:'盒',c:'own',art:'pearl',p:23.00,stock:2,safe:5,use:[10,9,11,10],own:1},
+  {id:4,n:'Brown Sugar Syrup',cn:'黑糖糖浆',u:'1 Gal / 瓶',un:'瓶',c:'own',art:'syrup',p:19.50,stock:5,safe:4,use:[5,6,5,5],own:1},
+  {id:5,n:'Dry Tapioca Pearls',cn:'生木薯珍珠',u:'22 lb / 袋',un:'袋',c:'ingr',art:'pearl',p:34.00,stock:3,safe:3,use:[4,4,3,4],sup:'Bossen',alt:'Possmei',altp:30.80},
+  {id:6,n:'Non-Dairy Creamer',cn:'植脂奶精',u:'55 lb / 箱',un:'箱',c:'ingr',art:'milk',p:88.00,stock:2,safe:2,use:[2,3,2,3],sup:'Bossen'},
+  {id:7,n:'Fresh Whole Milk',cn:'全脂鲜奶',u:'4 Gal / 箱',un:'箱',c:'ingr',art:'milk',p:26.40,stock:4,safe:5,use:[7,8,6,8],sup:'Restaurant Depot'},
+  {id:8,n:'Fruit Syrup Set',cn:'水果糖浆组',u:'6 × 1 Gal',un:'组',c:'ingr',art:'syrup',p:71.00,stock:1,safe:2,use:[2,2,2,1],sup:'Tea Zone',alt:'Bossen',altp:64.50},
+  {id:9,n:'700ml PP Cup',cn:'700毫升胶杯',u:'1000 / 箱',un:'箱',c:'pack',art:'cup',p:68.00,stock:2,safe:4,use:[6,5,6,6],sup:'Karat',alt:'WebstaurantStore',altp:61.75},
+  {id:10,n:'Sealing Film Roll',cn:'封口膜',u:'8 rolls / 箱',un:'箱',c:'pack',art:'sealfilm',p:52.00,stock:3,safe:3,use:[3,4,3,4],sup:'Karat'},
+  {id:11,n:'12mm Boba Straw',cn:'12毫米珍珠吸管',u:'1600 / 箱',un:'箱',c:'pack',art:'straw',p:40.50,stock:2,safe:3,use:[4,4,5,4],sup:'Karat',alt:'Bossen',altp:36.20},
+  {id:12,n:'Takeout Carrier Bag',cn:'外带提袋',u:'500 / 捆',un:'捆',c:'supply',art:'bag',p:31.00,stock:4,safe:2,use:[3,3,2,3],sup:'Uline'}
+  ]},
+
+chinese:{
+  nm:'中餐馆', en:'Chinese Restaurant', em:'🍜', budget:16000,
+  kitchen:'中央厨房 Central Kitchen',
+  cats:[{k:'own',n:'自制品 In-House'},{k:'ingr',n:'食材 Ingredients'},{k:'dry',n:'干货调料 Dry & Sauce'},{k:'supply',n:'耗材 Supplies'}],
+  P:[
+  {id:1,n:'Master Chicken Broth',cn:'老母鸡高汤',u:'5 Gal / 桶',un:'桶',c:'own',art:'broth',p:42.00,stock:2,safe:5,use:[9,8,10,9],own:1},
+  {id:2,n:'House Chili Sauce',cn:'自制辣椒酱',u:'1 Gal / 桶',un:'桶',c:'own',art:'veg',p:27.50,stock:4,safe:4,use:[5,4,6,5],own:1},
+  {id:3,n:'Marinated Pork Slices',cn:'腌制肉片',u:'20 lb / 盒',un:'盒',c:'own',art:'chicken',p:68.00,stock:3,safe:5,use:[8,7,9,8],own:1},
+  {id:4,n:'Hand-Pulled Noodle Dough',cn:'拉面面团',u:'15 lb / 盆',un:'盆',c:'own',art:'noodle',p:22.00,stock:5,safe:4,use:[6,5,7,6],own:1},
+  {id:5,n:'Jasmine Rice',cn:'茉莉香米',u:'50 lb / 袋',un:'袋',c:'dry',art:'rice',p:44.00,stock:4,safe:6,use:[8,9,7,9],sup:'H Mart Wholesale',alt:'99 Ranch Supply',altp:40.50},
+  {id:6,n:'Soybean Oil',cn:'大豆油',u:'35 lb / 桶',un:'桶',c:'dry',art:'oil',p:39.00,stock:3,safe:4,use:[5,6,5,5],sup:'Restaurant Depot',alt:'Sysco',altp:35.75},
+  {id:7,n:'Light Soy Sauce',cn:'生抽',u:'6 × 1 Gal',un:'箱',c:'dry',art:'soy',p:58.00,stock:2,safe:2,use:[2,3,2,2],sup:'H Mart Wholesale'},
+  {id:8,n:'Chicken Thigh Boneless',cn:'去骨鸡腿肉',u:'40 lb / 箱',un:'箱',c:'ingr',art:'chicken',p:96.00,stock:2,safe:4,use:[6,5,7,6],sup:'US Foods',alt:'Restaurant Depot',altp:89.40},
+  {id:9,n:'Mixed Vegetables',cn:'综合时蔬',u:'30 lb / 箱',un:'箱',c:'ingr',art:'veg',p:34.00,stock:3,safe:4,use:[6,7,5,6],sup:'Restaurant Depot'},
+  {id:10,n:'Fresh Ginger & Garlic',cn:'姜蒜',u:'10 lb / 袋',un:'袋',c:'ingr',art:'ginger',p:18.50,stock:5,safe:3,use:[3,4,3,3],sup:'99 Ranch Supply'},
+  {id:11,n:'Takeout Container 32oz',cn:'32盎司打包盒',u:'300 / 箱',un:'箱',c:'supply',art:'bag',p:48.00,stock:2,safe:4,use:[6,5,6,6],sup:'Uline',alt:'WebstaurantStore',altp:43.20},
+  {id:12,n:'Disposable Chopsticks',cn:'一次性筷子',u:'3000 / 箱',un:'箱',c:'supply',art:'straw',p:36.00,stock:4,safe:3,use:[3,4,3,4],sup:'99 Ranch Supply'}
+  ]},
+
+grocery:{
+  nm:'便利超市', en:'Grocery Market', em:'🏪', budget:21000,
+  kitchen:'中央仓 Central Warehouse',
+  cats:[{k:'own',n:'自营熟食 Own Deli'},{k:'fresh',n:'生鲜 Fresh'},{k:'pkg',n:'包装食品 Packaged'},{k:'supply',n:'耗材 Supplies'}],
+  P:[
+  {id:1,n:'Roast Deli Chicken',cn:'烤鸡熟食',u:'12 ct / 盘',un:'盘',c:'own',art:'deli',p:54.00,stock:3,safe:6,use:[11,10,12,11],own:1},
+  {id:2,n:'In-House Baked Bread',cn:'现烤面包',u:'24 ct / 盘',un:'盘',c:'own',art:'bread',p:31.00,stock:6,safe:5,use:[9,8,10,9],own:1},
+  {id:3,n:'Prepared Salad Tray',cn:'即食沙拉盒',u:'20 ct / 盘',un:'盘',c:'own',art:'veg',p:43.00,stock:2,safe:4,use:[7,6,8,7],own:1},
+  {id:4,n:'Grade A Large Eggs',cn:'A级大鸡蛋',u:'15 doz / 箱',un:'箱',c:'fresh',art:'egg',p:49.50,stock:4,safe:6,use:[9,10,8,10],sup:'Restaurant Depot',alt:'US Foods',altp:45.90},
+  {id:5,n:'Whole Milk Gallon',cn:'全脂牛奶',u:'4 Gal / 箱',un:'箱',c:'fresh',art:'milk',p:26.40,stock:8,safe:7,use:[12,11,13,12],sup:'US Foods'},
+  {id:6,n:'Cheddar Cheese Block',cn:'切达奶酪块',u:'10 lb / 箱',un:'箱',c:'fresh',art:'cheese',p:58.00,stock:2,safe:3,use:[4,3,4,4],sup:'Sysco',alt:'Restaurant Depot',altp:53.50},
+  {id:7,n:'Seasonal Vegetables',cn:'当季蔬菜',u:'30 lb / 箱',un:'箱',c:'fresh',art:'veg',p:34.00,stock:3,safe:5,use:[7,8,6,8],sup:'Restaurant Depot'},
+  {id:8,n:'Bottled Soft Drink',cn:'瓶装饮料',u:'24 ct / 箱',un:'箱',c:'pkg',art:'bottle',p:22.50,stock:9,safe:8,use:[14,13,15,14],sup:'Coca-Cola Dist.',alt:'Costco Business',altp:20.40},
+  {id:9,n:'Snack Chips Assorted',cn:'综合薯片',u:'50 ct / 箱',un:'箱',c:'pkg',art:'snack',p:38.00,stock:6,safe:5,use:[7,6,8,7],sup:'Frito Dist.'},
+  {id:10,n:'Jasmine Rice 25lb',cn:'茉莉香米 25磅',u:'25 lb / 袋',un:'袋',c:'pkg',art:'rice',p:26.00,stock:7,safe:6,use:[6,7,5,7],sup:'H Mart Wholesale'},
+  {id:11,n:'Shopping Bag',cn:'购物袋',u:'1000 / 箱',un:'箱',c:'supply',art:'bag',p:42.00,stock:3,safe:4,use:[5,5,6,5],sup:'Uline',alt:'WebstaurantStore',altp:37.80},
+  {id:12,n:'Paper Towel Roll',cn:'厨房纸巾',u:'30 rolls / 箱',un:'箱',c:'supply',art:'towel',p:34.50,stock:4,safe:3,use:[3,4,3,4],sup:'Uline'}
+  ]}
+};
+</script>
+
+<script>
+/* ==================== STATE ==================== */
+let S = null;
+const LIMIT = 1500;           // 自动审批额度
+const money = n => '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0 = n => '$' + Math.round(n).toLocaleString('en-US');
+const D = () => IND[S.ind];
+const unitPrice = p => (S.switched[p.id] && p.altp) ? p.altp : p.p;
+const supOf = p => p.own ? D().kitchen : ((S.switched[p.id] && p.alt) ? p.alt : p.sup);
+
+function freshState(ind, role){
+  return { ind, role, cart:{}, switched:{}, stage:0, myOrder:null, recv:{}, shortId:null, savings:0, avoided:0 };
+}
+/* 一周平均用量 */
+const weekly = p => p.use.reduce((a,b)=>a+b,0) / p.use.length;
+/* 建议订量 = 一周用量 + 安全库存 − 现有库存 */
+const sugg = p => Math.max(0, Math.ceil(weekly(p)) + p.safe - p.stock);
+/* 其他门店的预置订单（确定性） */
+function seedQty(si, p){
+  const base = Math.ceil(weekly(p) * .9) + p.safe - p.stock - (si === 1 ? 0 : 1);
+  const v = ((p.id * 7 + si * 13) % 3) - 1;
+  return Math.max(1, base + v);
+}
+
+/* ==================== LOGIN ==================== */
+let pickInd = null, pickRole = null;
+const ROLES = [
+  {k:'store',  nm:'门店店长', en:'Store Manager',  de:'按建议订量下单，确认收货与报缺',
+   ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M4 9h16v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9z"/><path d="M9 20v-6h6v6"/></svg>'},
+  {k:'kitchen',nm:'中央厨房', en:'Central Kitchen', de:'汇总各店需求，排产、采购、出配送单',
+   ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 10.5h15v8.5a3 3 0 0 1-3 3h-9a3 3 0 0 1-3-3v-8.5z"/><path d="M3.2 10.5h17.6"/><path d="M19.5 12.5h1.6a2 2 0 0 1 0 4h-1.6"/><path d="M9 7c0-1.2 1.1-1.2 1.1-2.4M13.4 6c0-1.3 1.1-1.3 1.1-2.5"/></svg>'},
+  {k:'owner',  nm:'老板 / 总部', en:'Owner HQ',     de:'全店概览、异常监控、月度内部对账',
+   ic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M6 20v-7M11 20V7M16 20v-10M21 20V4"/></svg>'}
+];
+
+const IND_SHORT = {juice:'Juice', bakery:'Bakery', boba:'Boba Tea', chinese:'Chinese', grocery:'Grocery'};
+function buildLogin(){
+  document.getElementById('indG').innerHTML = Object.keys(IND).map(k =>
+    `<div class="ind-c" data-k="${k}" onclick="selInd('${k}')">
+       <span class="ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#161a2b" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+       <span class="ic">${INDICON[k]}</span>
+       <span class="nm">${IND[k].nm}</span>
+       <span class="en">${IND_SHORT[k] || IND[k].en}</span>
+     </div>`).join('');
+  document.getElementById('roleG').innerHTML = ROLES.map(r =>
+    `<div class="role-c" data-k="${r.k}" onclick="selRole('${r.k}')">
+       ${r.ic}<div style="min-width:0"><span class="nm">${r.nm}</span><span class="de">${r.de}</span></div>
+     </div>`).join('');
+}
+function selInd(k){
+  pickInd = k;
+  document.querySelectorAll('.ind-c').forEach(e => e.classList.toggle('on', e.dataset.k === k));
+  chkGo();
+}
+function selRole(k){
+  pickRole = k;
+  document.querySelectorAll('.role-c').forEach(e => e.classList.toggle('on', e.dataset.k === k));
+  chkGo();
+}
+function chkGo(){ document.getElementById('lgGo').disabled = !(pickInd && pickRole); }
+
+function enterApp(){
+  S = freshState(pickInd, pickRole);
+  document.getElementById('login').classList.add('hide');
+  document.getElementById('app').classList.remove('hide');
+  document.body.classList.add('app');
+  boot();
+}
+function backToLogin(){
+  document.getElementById('login').classList.remove('hide');
+  document.getElementById('app').classList.add('hide');
+  document.body.classList.remove('app');
+  window.scrollTo(0,0);
+}
+function resetDemo(){
+  S = freshState(S.ind, S.role);
+  boot();
+  toast("已重置 Demo reset");
+}
+
+/* ==================== BOOT / ROUTER ==================== */
+function boot(){
+  const d = D();
+  document.getElementById('indBadge').innerHTML = `<span class="bi">${INDICON[S.ind]}</span><span>${d.nm} ${d.en}</span>`;
+  document.getElementById('spName').textContent = STORES[0].cn + ' ' + STORES[0].n;
+  const dd = new Date(Date.now() + 864e5);
+  document.getElementById('delDate').textContent =
+    `${dd.getMonth()+1}月${dd.getDate()}日`;
+  document.querySelectorAll('#roleSw button').forEach(b =>
+    b.classList.toggle('on', b.dataset.r === S.role));
+  renderAll();
+  window.scrollTo(0,0);
+}
+function setRole(r, el){
+  S.role = r;
+  document.querySelectorAll('#roleSw button').forEach(b => b.classList.remove('on'));
+  if (el) el.classList.add('on');
+  else document.querySelector(`#roleSw button[data-r="${r}"]`).classList.add('on');
+  renderAll();
+  window.scrollTo(0,0);
+}
+function renderAll(){
+  document.getElementById('vStore').classList.toggle('hide',   S.role !== 'store');
+  document.getElementById('vKitchen').classList.toggle('hide', S.role !== 'kitchen');
+  document.getElementById('vOwner').classList.toggle('hide',   S.role !== 'owner');
+  document.getElementById('cartBar').classList.toggle('hide',  S.role !== 'store');
+  document.getElementById('storePick').style.display = S.role === 'store' ? '' : 'none';
+  document.getElementById('pipK').classList.toggle('hide', !(S.stage === 1));
+  if (S.role === 'store')   renderStore();
+  if (S.role === 'kitchen') renderKitchen();
+  if (S.role === 'owner')   renderOwner();
+}
+
+/* ==================== ORDERS MODEL ==================== */
+/* 其他两家店的订单（始终存在），我的订单在 stage>=1 后加入 */
+function ordersOf(){
+  const d = D(), out = [];
+  for (let si = 1; si < 3; si++){
+    const items = d.P.map(p => ({ p, q: seedQty(si, p) })).filter(x => x.q > 0);
+    out.push({ si, items, total: items.reduce((a,x) => a + x.q * x.p.p, 0), mine:false });
+  }
+  if (S.stage >= 1 && S.myOrder)
+    out.unshift({ si:0, items:S.myOrder.items, total:S.myOrder.total, mine:true, no:S.myOrder.no });
+  return out.sort((a,b) => a.si - b.si);
+}
+function aggregate(){
+  const map = {};
+  ordersOf().forEach(o => o.items.forEach(({p,q}) => {
+    if (!map[p.id]) map[p.id] = { p, total:0, by:{} };
+    map[p.id].total += q;
+    map[p.id].by[o.si] = (map[p.id].by[o.si] || 0) + q;
+  }));
+  return Object.values(map).sort((a,b) => (b.p.own?1:0) - (a.p.own?1:0) || b.total - a.total);
+}
+</script>
+
+<script>
+/* ==================== STORE VIEW ==================== */
+let curCat = 'all';
+
+function renderStore(){
+  const d = D();
+  /* 预算条 */
+  const used = d.budget * .58;
+  const cart = cartTotal();
+  document.getElementById('bUsed').textContent = money0(used + cart);
+  document.getElementById('bTot').textContent  = money0(d.budget);
+  document.getElementById('remain').textContent= money0(Math.max(0, d.budget - used - cart));
+  document.getElementById('barUsed').style.width = (used / d.budget * 100) + '%';
+  document.getElementById('barCart').style.width = Math.min(100 - used / d.budget * 100, cart / d.budget * 100) + '%';
+
+  renderRecv();
+
+  /* 分类 */
+  const cats = [{k:'all', n:'全部 All'}].concat(d.cats);
+  document.getElementById('cats').innerHTML = cats.map(c =>
+    `<button class="${curCat === c.k ? 'on' : ''}" onclick="curCat='${c.k}';renderStore()">${c.n}</button>`).join('');
+
+  renderGrid();
+  renderCart();
+}
+
+function renderGrid(){
+  const d = D();
+  const q = (document.getElementById('q').value || '').trim().toLowerCase();
+  const list = d.P.filter(p =>
+    (curCat === 'all' || p.c === curCat) &&
+    (!q || (p.n + p.cn + (p.sup||'') + (p.alt||'')).toLowerCase().includes(q)));
+
+  if (!list.length){
+    document.getElementById('grid').innerHTML =
+      `<div class="empty" style="grid-column:1/-1"><div class="t">没有匹配的商品</div><div class="s">换个关键词或分类试试</div></div>`;
+    return;
+  }
+
+  document.getElementById('grid').innerHTML = list.map(p => {
+    const low = p.stock < p.safe;
+    const sg  = sugg(p);
+    const qv  = S.cart[p.id] || 0;
+    const up  = unitPrice(p);
+    const sw  = S.switched[p.id];
+    const pMin = Math.min(...p.use), pMax = Math.max(...p.use), pR = Math.max(1, pMax - pMin);
+    const bars = p.use.map(u => `<i style="height:${30 + (u - pMin) / pR * 70}%"></i>`).join('');
+    return `
+    <div class="pc ${low ? 'alert' : ''}">
+      <div class="pc-top">
+        <div class="pc-art">${ART[p.art] || ART.bag}</div>
+        <div class="pc-id">
+          <div class="n">${p.n}</div>
+          <div class="cn">${p.cn}</div>
+          <div class="u">${p.u}</div>
+        </div>
+      </div>
+      <div class="pc-meta">
+        ${p.own ? '<span class="tag own">内部调拨 In-House</span>' : '<span class="tag ext">外部采购 External</span>'}
+        ${low ? '<span class="tag low">低于安全库存 Low</span>' : ''}
+        ${sw ? '<span class="tag save">已换更低价 Switched</span>' : ''}
+      </div>
+      <div class="pc-stat">
+        <div>
+          <span class="sl">现有库存 / 安全库存</span>
+          <span class="sv ${low ? 'bad' : ''}">${p.stock} / ${p.safe} ${p.un}</span>
+        </div>
+        <div style="text-align:right">
+          <span class="sl">近四周用量</span>
+          <span class="usage">${bars}</span>
+        </div>
+      </div>
+      ${(!sw && p.alt) ? `
+      <div class="altbox">
+        <span><b>${p.alt}</b> 便宜 ${money(p.p - p.altp)}／${p.un}</span>
+        <button onclick="switchSup(${p.id})">换 Switch</button>
+      </div>` : ''}
+      <div class="pc-price">
+        <span class="p">${money(up)}</span><span class="pu">/ ${p.un}</span>
+      </div>
+      <div class="pc-sup">供应 ${supOf(p)}</div>
+      <div class="pc-act">
+        ${sg > 0 ? `<button class="sugg" onclick="setQ(${p.id},${sg})">建议订 ${sg} ${p.un}</button>` : '<span style="font-size:11.5px;color:var(--ink-3)">库存充足</span>'}
+        <div class="qty">
+          <button onclick="bump(${p.id},-1)">−</button>
+          <input type="number" min="0" value="${qv}" onchange="setQ(${p.id},this.value)">
+          <button onclick="bump(${p.id},1)">+</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchSup(id){
+  const p = D().P.find(x => x.id === id);
+  S.switched[id] = true;
+  S.savings += (p.p - p.altp) * Math.max(1, S.cart[id] || sugg(p) || 1);
+  renderStore();
+  toast(`已切换到 ${p.alt}，每${p.un}省 ${money(p.p - p.altp)}`);
+}
+function setQ(id, v){
+  const n = Math.max(0, parseInt(v) || 0);
+  if (n === 0) delete S.cart[id]; else S.cart[id] = n;
+  renderStore();
+}
+function bump(id, d){ setQ(id, (S.cart[id] || 0) + d); }
+function clearCart(){ S.cart = {}; renderStore(); toast('购物车已清空'); }
+
+function fillSuggested(){
+  let n = 0, sw = 0, saved = 0;
+  D().P.forEach(p => {
+    const s = sugg(p);
+    if (s > 0){
+      S.cart[p.id] = s; n++;
+      if (p.alt && p.altp < p.p && !S.switched[p.id]){
+        S.switched[p.id] = true; sw++; saved += (p.p - p.altp) * s;
+      }
+    }
+  });
+  renderStore();
+  toast(sw ? `已填入 ${n} 项 · 自动换了 ${sw} 家更便宜的供应商，省 ${money(saved)}`
+           : `已按建议量填入 ${n} 项商品`);
+}
+
+function cartTotal(){
+  return D().P.reduce((a,p) => a + (S.cart[p.id] || 0) * unitPrice(p), 0);
+}
+function renderCart(){
+  const n = Object.values(S.cart).filter(v => v > 0).length;
+  const t = cartTotal();
+  document.getElementById('cCount').textContent = n;
+  document.getElementById('cTotal').textContent = money(t);
+  const note = document.getElementById('cNote');
+  if (t > LIMIT){
+    note.className = 'cart-l2 warn';
+    note.textContent = `超过自动审批额度 ${money(LIMIT)}，提交后将转经理审批 → Manager approval required`;
+  } else {
+    note.className = 'cart-l2 ok';
+    note.textContent = `在自动审批额度 ${money(LIMIT)} 内，提交后直接进入排产 → Auto-approved`;
+  }
+  document.getElementById('btnSub').disabled = n === 0;
+}
+
+/* ==================== 收货 ==================== */
+function renderRecv(){
+  const box = document.getElementById('recvWrap');
+  if (S.stage < 2 || !S.myOrder){ box.innerHTML = ''; return; }
+  const done = S.stage >= 3;
+  box.innerHTML = `
+  <div class="recv">
+    <div class="recv-hd">
+      <div class="ic"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg></div>
+      <div style="flex:1">
+        <div class="t">配送已到店 · 请确认收货 Delivery Arrived</div>
+        <div class="s">配送单 ${S.myOrder.slip} · 共 ${S.myOrder.items.length} 项</div>
+      </div>
+      ${done ? '<span class="tag own">已完成收货 Received</span>' :
+        '<button class="btn btn-p" onclick="receiveAll()">全部确认收到 Confirm All</button>'}
+    </div>
+    ${S.myOrder.items.map(({p,q}) => {
+      const isShort = p.id === S.myOrder.shortId;
+      const got = isShort ? Math.max(1, q - 2) : q;
+      const st = S.recv[p.id];
+      return `<div class="recv-li ${st === 'short' ? 'short' : ''}">
+        <div class="nm"><div>${p.n}</div><div class="cn">${p.cn}</div></div>
+        <span class="q">订 ${q} ${p.un}${st === 'short' ? ` · 实收 ${got}` : ''}</span>
+        ${done ? (st === 'short'
+            ? `<span class="tag low">少送 ${q - got} ${p.un} · 已转补单</span>`
+            : '<span class="tag own">已收 OK</span>')
+          : `<button class="chip ${st === 'ok' ? 'on' : ''}" onclick="mark(${p.id},'ok')">收到 OK</button>
+             <button class="chip bad ${st === 'short' ? 'on' : ''}" onclick="mark(${p.id},'short')">报缺 Short</button>`}
+      </div>`;
+    }).join('')}
+    ${done ? `<div class="slip-ft"><span>异常已自动生成补单，将并入下一配送批次</span><span class="mono">${S.myOrder.no}-R</span></div>` : ''}
+  </div>`;
+}
+function mark(id, v){
+  S.recv[id] = v;
+  const all = S.myOrder.items.every(x => S.recv[x.p.id]);
+  if (all) S.stage = 3;
+  renderStore();
+  if (all) toast('收货已完成，异常已转补单');
+}
+function receiveAll(){
+  S.myOrder.items.forEach(x => S.recv[x.p.id] = (x.p.id === S.myOrder.shortId) ? 'short' : 'ok');
+  S.stage = 3;
+  renderStore();
+  toast('收货完成 · 1 项少送已自动转补单');
+}
+</script>
+
+<script>
+/* ==================== 提交订单 ==================== */
+function submitOrder(){
+  const d = D();
+  const items = d.P.filter(p => S.cart[p.id] > 0)
+                   .map(p => ({ p, q:S.cart[p.id], up:unitPrice(p) }));
+  const total = items.reduce((a,x) => a + x.q * x.up, 0);
+  const no = 'ORD-' + (1030 + Math.floor(Math.random() * 60));
+
+  /* 收益统计 */
+  const avoided = items.filter(x => x.p.stock < x.p.safe).length;
+  let saved = 0;
+  items.forEach(x => { if (S.switched[x.p.id] && x.p.altp) saved += (x.p.p - x.p.altp) * x.q; });
+
+  /* 指定一项“少送”作为异常演示：优先自制品且数量≥3 */
+  const cand = items.filter(x => x.q >= 3);
+  const shortId = (cand.find(x => x.p.own) || cand[0] || items[0]).p.id;
+
+  S.myOrder = { no, items, total, avoided, saved, shortId, slip:'DN-' + no.slice(4) };
+  S.stage = 1;
+  S.cart = {};
+
+  const over = total > LIMIT;
+  openModal(`
+    <div class="md-top">
+      <div class="md-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg></div>
+      <h3>订单已提交 Order Submitted</h3>
+      <p>${over ? '金额超过自动审批额度，已转经理审批' : '已自动审批，进入中央厨房排产'}</p>
+    </div>
+    <div class="md-bd">
+      <div class="ord-row"><span>订单号 Order No.</span><b class="mono">${no}</b></div>
+      <div class="ord-row"><span>门店 Store</span><b>${STORES[0].cn}</b></div>
+      <div class="ord-row"><span>品项 Items</span><b>${items.length} 项</b></div>
+      <div class="ord-row"><span>状态 Status</span><b style="color:${over ? 'var(--amber)' : 'var(--brand)'}">${over ? '待经理审批' : '已自动审批'}</b></div>
+      <div class="ord-row tot"><span>金额 Amount</span><b>${money(total)}</b></div>
+
+      <div style="margin-top:20px;padding-top:16px;border-top:1.5px solid var(--line)">
+        <div style="font-size:12px;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">本次下单，系统帮你</div>
+        <div class="ben">
+          <div class="bi" style="background:var(--red-soft);color:var(--red)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 9v4M12 17h.01M10.3 3.9L2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg></div>
+          <div><div class="bt">避免 ${avoided} 次缺货</div><div class="bs">这些商品已低于安全库存，系统提前算进了订量</div></div>
+        </div>
+        <div class="ben">
+          <div class="bi" style="background:var(--amber-soft);color:var(--amber)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+          <div><div class="bt">比价节省 ${money(saved)}</div><div class="bs">${saved > 0 ? '已自动换成更低价的供应商' : '本单未切换供应商，点商品卡上的「换」还能再省'}</div></div>
+        </div>
+        <div class="ben">
+          <div class="bi" style="background:var(--brand-soft);color:var(--brand)">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+          <div><div class="bt">用时 90 秒</div><div class="bs">人工盘点＋微信报单＋汇总，通常约 25 分钟</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="md-ft">
+      <button class="btn btn-p" onclick="closeModal();setRole('kitchen')">看看中央厨房收到了什么 →</button>
+      <button class="btn" onclick="closeModal()">留在门店 Stay</button>
+    </div>`);
+  renderStore();
+}
+
+/* ==================== KITCHEN VIEW ==================== */
+function renderKitchen(){
+  const d = D(), orders = ordersOf(), agg = aggregate();
+  const ownQ = agg.filter(a => a.p.own).reduce((s,a) => s + a.total, 0);
+  const extAmt = agg.filter(a => !a.p.own).reduce((s,a) => s + a.total * a.p.p, 0);
+
+  document.getElementById('kStats').innerHTML = `
+    <div class="kst"><div class="l">今日下单门店 Stores</div><div class="v">${orders.length}</div><div class="d">${S.stage >= 1 ? '含你刚提交的订单' : '等待市中心店下单'}</div></div>
+    <div class="kst"><div class="l">汇总品项 Line Items</div><div class="v">${agg.length}</div><div class="d">合并后统一排产</div></div>
+    <div class="kst"><div class="l">自制品总量 In-House</div><div class="v">${ownQ}</div><div class="d">需安排今日生产</div></div>
+    <div class="kst"><div class="l">外采金额 External</div><div class="v">${money0(extAmt)}</div><div class="d">统一向供应商下单</div></div>`;
+
+  document.getElementById('aggList').innerHTML = agg.map((a,i) => `
+    <div class="agg-row" id="ag${i}">
+      <div class="agg-h" onclick="document.getElementById('ag${i}').classList.toggle('open')">
+        <div class="agg-art">${ART[a.p.art] || ART.bag}</div>
+        <div class="agg-nm"><div class="n">${a.p.n} ${a.p.own ? '<span class="tag own" style="margin-left:4px">自制</span>' : ''}</div><div class="cn">${a.p.cn} · ${a.p.u}</div></div>
+        <div class="agg-q">${a.total}<small>${a.p.un}</small></div>
+        <svg class="agg-ch" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      <div class="agg-d">
+        ${STORES.map((st,si) => a.by[si] ? `<div class="sub-row"><span class="${si===0&&S.stage>=1?'you':''}">${st.cn} ${st.n}${si===0&&S.stage>=1?' （你的订单）':''}</span><b>${a.by[si]} ${a.p.un}</b></div>` : '').join('')}
+      </div>
+    </div>`).join('');
+
+  const own = agg.filter(a => a.p.own), ext = agg.filter(a => !a.p.own);
+  document.getElementById('planBox').innerHTML = `
+    <div class="plan-c">
+      <div class="plan-hd own">
+        <div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 20h16M5 20V9h14v11M8 9V5a4 4 0 0 1 8 0v4"/></svg></div>
+        <div><div class="t">自制品排产 Production</div><div class="s">${d.kitchen} · 今日需完成</div></div>
+      </div>
+      ${own.map(a => `<div class="plan-li"><span class="nm">${a.p.cn} ${a.p.n}</span><b>${a.total} ${a.p.un}</b></div>`).join('')}
+      <div class="slip-ft"><span>${own.length} 个自制品 · 共 ${own.reduce((s,a)=>s+a.total,0)} 件</span><span>内部计价 ${money0(own.reduce((s,a)=>s+a.total*a.p.p,0))}</span></div>
+    </div>
+    <div class="plan-c">
+      <div class="plan-hd ext">
+        <div class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4"/></svg></div>
+        <div><div class="t">外部采购 Purchasing</div><div class="s">按供应商合并下单 · 合计 ${money0(extAmt)}</div></div>
+      </div>
+      ${ext.map(a => `<div class="plan-li"><span class="nm">${a.p.cn} <span style="color:var(--ink-3)">· ${a.p.sup}</span></span><b>${a.total} ${a.p.un}</b></div>`).join('')}
+      <div class="slip-ft"><span>${new Set(ext.map(a=>a.p.sup)).size} 家供应商 · ${ext.length} 个品项</span><span>采购金额 ${money0(extAmt)}</span></div>
+    </div>`;
+
+  const btn = document.getElementById('btnSlip');
+  btn.disabled = S.stage < 1;
+  btn.textContent = S.stage >= 2 ? '已生成 Generated' : '生成配送单 Generate';
+  renderSlips();
+}
+
+function genSlips(){
+  if (S.stage < 1) return;
+  S.stage = Math.max(S.stage, 2);
+  renderKitchen();
+  toast('配送单已生成 · 回到门店可以确认收货');
+}
+function renderSlips(){
+  const box = document.getElementById('slipBox');
+  if (S.stage < 1){
+    box.innerHTML = `<div class="panel empty">
+      <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 7l9-4 9 4v10l-9 4-9-4V7z"/><path d="M3 7l9 4 9-4M12 11v10"/></svg>
+      <div class="t">还没有可配送的订单</div>
+      <div class="s">切换到「门店 Store」下一单，再回来这里生成配送单——你会看到汇总数字跟着变化。</div></div>`;
+    return;
+  }
+  if (S.stage < 2){
+    box.innerHTML = `<div class="panel empty">
+      <div class="t">订单已齐，等待生成配送单</div>
+      <div class="s">点上方「生成配送单」，系统会按门店拆分装车清单。</div></div>`;
+    return;
+  }
+  const orders = ordersOf();
+  box.innerHTML = `<div class="slips">${orders.map(o => `
+    <div class="slip">
+      <div class="slip-hd">
+        <span class="s">${STORES[o.si].cn} ${STORES[o.si].n}</span>
+        <span class="no">${o.mine ? S.myOrder.slip : 'DN-' + (2100 + o.si * 7)}</span>
+      </div>
+      ${o.items.slice(0,7).map(x => `<div class="slip-li"><span>${x.p.cn}</span><b>${x.q} ${x.p.un}</b></div>`).join('')}
+      ${o.items.length > 7 ? `<div class="slip-li"><span style="color:var(--ink-3)">其余 ${o.items.length - 7} 项…</span></div>` : ''}
+      <div class="slip-ft"><span>${o.items.length} 项 · ${o.items.reduce((a,x)=>a+x.q,0)} 件</span><span>${o.mine ? '你的门店' : '明日 08:00 送达'}</span></div>
+    </div>`).join('')}</div>`;
+}
+</script>
+
+<script>
+/* ==================== OWNER VIEW ==================== */
+function renderOwner(){
+  const d = D(), orders = ordersOf();
+  const today = orders.reduce((a,o) => a + o.total, 0);
+  const abn = S.stage >= 3 ? 1 : 0;
+  const ownToday = aggregate().filter(a => a.p.own)
+                     .reduce((s,a) => s + a.total * a.p.p, 0);
+
+  document.getElementById('oCards').innerHTML = `
+    <div class="oc"><div class="l">今日下单门店</div><div class="v">${orders.length} / 3</div><div class="d">${S.stage >= 1 ? '全部门店已下单' : '市中心店尚未下单'}</div></div>
+    <div class="oc"><div class="l">今日订单总额</div><div class="v">${money0(today)}</div><div class="d">含内部调拨与外部采购</div></div>
+    <div class="oc"><div class="l">其中内部调拨</div><div class="v">${money0(ownToday)}</div><div class="d">${d.kitchen} 产值</div></div>
+    <div class="oc ${abn ? 'warn' : ''}"><div class="l">今日异常</div><div class="v">${abn}</div><div class="d">${abn ? '1 项少送，已自动转补单' : '暂无异常'}</div></div>`;
+
+  document.getElementById('tToday').innerHTML = `
+    <thead><tr><th>门店 Store</th><th>订单号</th><th class="r">品项</th><th class="r">金额</th><th>状态 Status</th></tr></thead>
+    <tbody>${orders.map(o => {
+      const over = o.total > LIMIT;
+      const st = o.mine
+        ? (S.stage >= 3 ? '<span class="tag low">已收货 · 1 项少送</span>'
+          : S.stage >= 2 ? '<span class="tag ext">配送中 In Transit</span>'
+          : over ? '<span class="tag save">待审批 Pending</span>' : '<span class="tag own">已审批 Approved</span>')
+        : '<span class="tag own">已审批 Approved</span>';
+      return `<tr class="${o.mine ? 'me' : ''}">
+        <td><b>${STORES[o.si].cn}</b> <span style="color:var(--ink-3)">${STORES[o.si].n}</span>${o.mine ? ' <span class="tag own">本次操作</span>' : ''}</td>
+        <td class="mono" style="color:var(--ink-3)">${o.mine ? o.no : 'ORD-' + (1010 + o.si * 9)}</td>
+        <td class="r">${o.items.length}</td>
+        <td class="r"><b>${money(o.total)}</b></td>
+        <td>${st}</td></tr>`;
+    }).join('')}
+    <tr class="sum"><td>合计 Total</td><td></td><td class="r">${orders.reduce((a,o)=>a+o.items.length,0)}</td><td class="r">${money(today)}</td><td></td></tr>
+    </tbody>`;
+
+  /* 月度对账：本月已累计 + 今日 */
+  const base = [ [d.budget*1.52, d.budget*0.92], [d.budget*1.18, d.budget*0.84], [d.budget*1.41, d.budget*0.97] ];
+  const rows = STORES.map((st,si) => {
+    const o = orders.find(x => x.si === si);
+    let inn = base[si][0], ext = base[si][1];
+    if (o){ o.items.forEach(({p,q}) => { if (p.own) inn += q * p.p; else ext += q * p.p; }); }
+    return { st, si, inn, ext };
+  });
+  const tIn = rows.reduce((a,r) => a + r.inn, 0), tEx = rows.reduce((a,r) => a + r.ext, 0);
+
+  document.getElementById('tRecon').innerHTML = `
+    <thead><tr><th>门店 Store</th><th class="r">内部调拨 In-House</th><th class="r">外部采购 External</th><th class="r">合计 Total</th><th class="r">内部占比</th></tr></thead>
+    <tbody>${rows.map(r => `
+      <tr class="${r.si === 0 && S.stage >= 1 ? 'me' : ''}">
+        <td><b>${r.st.cn}</b> <span style="color:var(--ink-3)">${r.st.n}</span></td>
+        <td class="r">${money0(r.inn)}</td>
+        <td class="r">${money0(r.ext)}</td>
+        <td class="r"><b>${money0(r.inn + r.ext)}</b></td>
+        <td class="r" style="color:var(--ink-3)">${Math.round(r.inn / (r.inn + r.ext) * 100)}%</td>
+      </tr>`).join('')}
+      <tr class="sum">
+        <td>合计 Total</td><td class="r">${money0(tIn)}</td><td class="r">${money0(tEx)}</td>
+        <td class="r">${money0(tIn + tEx)}</td><td class="r">${Math.round(tIn/(tIn+tEx)*100)}%</td>
+      </tr>
+    </tbody>`;
+}
+
+/* ==================== MODAL / TOAST / MISC ==================== */
+function openModal(html){
+  document.getElementById('mdBox').innerHTML = html;
+  document.getElementById('ov').classList.add('on');
+}
+function closeModal(){ document.getElementById('ov').classList.remove('on'); }
+document.getElementById('ov').addEventListener('click', e => { if (e.target.id === 'ov') closeModal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+let tTimer;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('on');
+  clearTimeout(tTimer);
+  tTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+/* 截单倒计时 */
+function tick(){
+  const now = new Date(), end = new Date();
+  end.setHours(17,0,0,0);
+  if (end < now) end.setDate(end.getDate() + 1);
+  const ms = end - now, h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+  const el = document.getElementById('countdown');
+  if (el) el.textContent = `距截单还有 ${h} 小时 ${m} 分 · ${h}h ${m}m left`;
+}
+setInterval(tick, 30000);
+
+/* INIT */
+buildLogin();
+tick();
+</script>
+</body>
+</html>
